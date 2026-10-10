@@ -21,10 +21,23 @@ const ROUTES = [
 
 // Cheap content assertions on top of the status check.
 const EXPECTATIONS = {
-  '/': ['<html lang="zh-TW"', '<meta property="og:locale" content="zh_TW"', 'id="faq"'],
-  '/career/': ['/interviews/2026-pm-chen/', 'id="interviews"', 'id="internships"'],
+  '/': [
+    '<html lang="zh-TW"',
+    '<meta property="og:locale" content="zh_TW"',
+    'id="faq"',
+  ],
+  '/career/': [
+    '/interviews/2026-pm-chen/',
+    'id="interviews"',
+    'id="internships"',
+  ],
   '/partners/': ['mailto:'],
-  '/resources/': ['data-resource-tabs', 'id="exams"', '/resources/business-frameworks/', 'mergersandinquisitions.com/400-questions'],
+  '/resources/': [
+    'data-resource-tabs',
+    'id="exams"',
+    '/resources/business-frameworks/',
+    'mergersandinquisitions.com/400-questions',
+  ],
   '/resources/business-frameworks/': ['五力分析', '"@type":"Article"'],
   '/venues/': ['venue-schedule-data', 'data-week-body', '105 教室', '討論桌 1'],
   '/interviews/2026-pm-chen/': ['"@type":"Article"', 'interview-body'],
