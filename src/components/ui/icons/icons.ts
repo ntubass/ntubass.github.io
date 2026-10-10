@@ -645,6 +645,34 @@ export const Icons = {
     viewBox: '0 0 16 16',
     fill: 'currentColor',
   },
+  photo: {
+    paths: [
+      {
+        d: 'm2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z',
+      },
+    ],
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    strokeWidth: '1.5',
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    stroke: 'currentColor',
+  },
+  instagram: {
+    paths: [
+      {
+        d: 'M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z',
+      },
+      { d: 'M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37Z' },
+      { d: 'M17.5 6.5h.01' },
+    ],
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    strokeWidth: '2',
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    stroke: 'currentColor',
+  },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof Icons;

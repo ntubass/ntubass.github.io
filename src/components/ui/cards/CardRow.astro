@@ -1,0 +1,79 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+
+/**
+ * Full-width list row (used by 職涯訪談): title, a meta
+ * line, summary and "閱讀更多" on the left, a square image (or a coloured
+ * placeholder) on the right. On phones the image moves above the text.
+ */
+interface Props {
+  href: string;
+  title: string;
+  /** Small grey line under the title, e.g. "2026 / 企業專案 / 零售". */
+  meta: string;
+  summary: string;
+  image?: ImageMetadata;
+  imageAlt?: string;
+  /** Text shown in the placeholder when there is no image. */
+  placeholder: string;
+  /** Tailwind gradient classes for the placeholder. */
+  placeholderClass?: string;
+}
+
+const {
+  href,
+  title,
+  meta,
+  summary,
+  image,
+  imageAlt,
+  placeholder,
+  placeholderClass = 'bg-linear-to-br from-yellow-200 to-orange-300',
+} = Astro.props;
+const { copy: t } = Astro.locals;
+---
+
+<a
+  href={href}
+  class="group flex flex-col-reverse gap-6 rounded-2xl border border-neutral-300/60 bg-neutral-50 p-5 ring-zinc-500 outline-hidden transition duration-300 hover:shadow-lg focus-visible:ring-3 md:flex-row md:items-start md:p-6 dark:border-neutral-700 dark:bg-neutral-900/50 dark:ring-zinc-200"
+>
+  <div class="min-w-0 grow">
+    <h3 class="text-xl font-bold text-neutral-800 group-hover:text-orange-400 md:text-2xl dark:text-neutral-200 dark:group-hover:text-orange-300">
+      {title}
+    </h3>
+    <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+      {meta}
+    </p>
+    <p class="mt-3 text-pretty text-neutral-600 dark:text-neutral-400">
+      {summary}
+    </p>
+    <span class="mt-4 inline-flex items-center gap-x-1 font-bold text-neutral-800 transition group-hover:text-orange-400 dark:text-neutral-200 dark:group-hover:text-orange-300">
+      {t.common.readMore}
+      <span aria-hidden="true">»</span>
+    </span>
+  </div>
+
+  <div class="aspect-video w-full shrink-0 overflow-hidden rounded-xl md:aspect-square md:w-56 lg:w-64">
+    {image ? (
+      <Image
+        src={image}
+        alt={imageAlt ?? title}
+        class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        width={512}
+        height={512}
+      />
+    ) : (
+      <div
+        class:list={[
+          'flex h-full w-full items-center justify-center p-5',
+          placeholderClass,
+        ]}
+      >
+        <span class="text-2xl font-bold text-neutral-800/80">
+          {placeholder}
+        </span>
+      </div>
+    )}
+  </div>
+</a>

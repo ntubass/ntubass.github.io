@@ -1,0 +1,118 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import MainLayout from '@/layouts/MainLayout.astro';
+import PageHero from '@components/sections/landing/PageHero.astro';
+import heroImage from '@images/heroes/partners.jpg';
+import Section from '@components/ui/blocks/Section.astro';
+import SectionHeader from '@components/ui/blocks/SectionHeader.astro';
+import FeatureGrid from '@components/ui/blocks/FeatureGrid.astro';
+import Icon from '@components/ui/icons/Icon.astro';
+import { SITE } from '@data/constants';
+import { partners } from '@data/partners';
+import { getCopy } from '@/copy';
+import type { MarketingLocale } from '@utils/locale';
+
+/**
+ * 合作夥伴：合作企業 Logo 牆 → 合作方式 → 邀請合作。
+ * 名單在 `src/data_files/partners.ts`，Logo 放在 `src/images/partners/`。
+ */
+interface Props {
+  locale: MarketingLocale;
+}
+
+const { locale } = Astro.props;
+const copy = getCopy(locale).partners;
+
+// 讀進 src/images/partners/ 裡所有 Logo，讓 partners.ts 只要寫檔名就好
+const logoFiles = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/images/partners/*.{jpg,jpeg,png,webp,avif,svg}',
+  { eager: true }
+);
+function logoOf(filename: string): ImageMetadata {
+  const logo = logoFiles[`/src/images/partners/${filename}`];
+  if (!logo) {
+    throw new Error(
+      `找不到合作夥伴 Logo src/images/partners/${filename}，請確認檔名（含副檔名、大小寫）是否正確。`
+    );
+  }
+  return logo.default;
+}
+
+const mailto = `mailto:${SITE.email}?subject=${encodeURIComponent(copy.contact.mailSubject)}`;
+const tileClass =
+  'flex h-28 items-center justify-center rounded-2xl border border-neutral-300/60 bg-neutral-50 p-6 text-center dark:border-neutral-700 dark:bg-neutral-900/50';
+---
+
+<MainLayout title={copy.title} description={copy.metaDescription}>
+  <PageHero
+    title={copy.title}
+    subTitle={copy.hero.subTitle}
+    image={heroImage}
+  />
+
+  {/* 合作企業 Logo 牆 */}
+  <Section tone="muted">
+    <SectionHeader title={copy.logos.title} subTitle={copy.logos.subTitle} />
+    <ul class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      {partners.map(partner => {
+        const content = partner.logo ? (
+          <Image
+            src={logoOf(partner.logo)}
+            alt={partner.name}
+            class="max-h-16 w-auto object-contain"
+            height={128}
+          />
+        ) : (
+          <span class="font-bold text-neutral-700 dark:text-neutral-300">
+            {partner.name}
+          </span>
+        );
+        return (
+          <li>
+            {partner.url ? (
+              <a
+                href={partner.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class:list={[tileClass, 'transition hover:shadow-md']}
+              >
+                {content}
+              </a>
+            ) : (
+              <div class={tileClass}>{content}</div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  </Section>
+
+  {/* 合作方式 */}
+  <Section>
+    <SectionHeader title={copy.ways.title} subTitle={copy.ways.subTitle} />
+    <FeatureGrid items={copy.ways.items} />
+  </Section>
+
+  {/* 邀請合作 */}
+  <Section tone="muted" id="contact">
+    <div class="mx-auto max-w-2xl text-center">
+      <h2 class="text-2xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200">
+        {copy.contact.title}
+      </h2>
+      <p class="mt-3 text-lg text-pretty text-neutral-600 dark:text-neutral-400">
+        {copy.contact.description}
+      </p>
+      <a
+        href={mailto}
+        class="mt-6 inline-flex items-center gap-x-2 rounded-lg bg-yellow-400 px-5 py-3 font-bold text-neutral-800 transition hover:bg-yellow-500"
+      >
+        <Icon name="envelopeOpen" class="h-5 w-5" />
+        {copy.contact.btn}
+      </a>
+      <p class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
+        {SITE.email}
+      </p>
+    </div>
+  </Section>
+</MainLayout>

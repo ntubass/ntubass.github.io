@@ -7,8 +7,7 @@ import {
 } from '@utils/locale';
 
 /**
- * Content module for the localised collections (`blog`, `insights`,
- * `products`).
+ * Content module for the localised collections (`interviews`, `resources`).
  *
  * Entries live under `src/content/<collection>/<locale>/<slug>.md`, so an
  * entry's id is `<locale>/<slug>`. This module is the only place that knows
@@ -16,16 +15,15 @@ import {
  * take an entry and ask here for its locale, slug, path and siblings.
  */
 
-export type LocalisedCollection = 'blog' | 'insights' | 'products';
+export type LocalisedCollection = 'interviews' | 'resources';
 export type LocalisedEntry<
   C extends LocalisedCollection = LocalisedCollection,
 > = CollectionEntry<C>;
 
 /** Unlocalised route prefix of each collection. */
 const ROUTES: Record<LocalisedCollection, string> = {
-  blog: '/blog',
-  insights: '/insights',
-  products: '/products',
+  interviews: '/interviews',
+  resources: '/resources',
 };
 
 /** Default ordering of each collection wherever it is listed. */
@@ -35,9 +33,11 @@ const SORTERS: {
     b: CollectionEntry<C>
   ) => number;
 } = {
-  blog: (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-  products: (a, b) => a.data.main.id - b.data.main.id,
-  insights: () => 0,
+  // Newest interview first.
+  interviews: (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+  // By `order` within a field, then title.
+  resources: (a, b) =>
+    a.data.order - b.data.order || a.data.title.localeCompare(b.data.title),
 };
 
 /** The locale an entry was authored in, from its id prefix. */
@@ -51,7 +51,7 @@ export function slugOf(entry: LocalisedEntry): string {
   return entry.id.replace(/^[^/]+\//, '');
 }
 
-/** Site-relative path of an entry's page, e.g. `/fr/blog/post-1/`. */
+/** Site-relative path of an entry's page, e.g. `/interviews/2026-wang/`. */
 export function pathFor(entry: LocalisedEntry): string {
   return `${localePath(localeOf(entry), ROUTES[entry.collection])}/${slugOf(entry)}/`;
 }
@@ -70,19 +70,6 @@ export async function entriesFor<C extends LocalisedCollection>(
       b: CollectionEntry<C>
     ) => number
   );
-}
-
-/** The same entry in another locale, if it has been translated. */
-export async function siblingOf<C extends LocalisedCollection>(
-  entry: CollectionEntry<C>,
-  locale: MarketingLocale
-): Promise<CollectionEntry<C> | undefined> {
-  const siblings = (await entriesFor(
-    entry.collection,
-    locale
-  )) as CollectionEntry<C>[];
-  const slug = slugOf(entry);
-  return siblings.find(candidate => slugOf(candidate) === slug);
 }
 
 /**

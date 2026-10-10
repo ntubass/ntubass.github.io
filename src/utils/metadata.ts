@@ -4,6 +4,7 @@ import {
   LOCALE_INFO,
   MARKETING_LOCALES,
   alternatePaths,
+  withBase,
   localePath,
   type MarketingLocale,
 } from '@utils/locale';
@@ -91,7 +92,7 @@ export function buildPageMetadata(input: PageMetadataInput): PageMetadata {
   const publisher = {
     '@type': 'Organization',
     name: SITE.title,
-    logo: { '@type': 'ImageObject', url: `${SITE.url}/favicon.ico` },
+    logo: { '@type': 'ImageObject', url: absoluteUrl(withBase('/favicon.ico')) },
   };
 
   let jsonLd: Record<string, unknown>;

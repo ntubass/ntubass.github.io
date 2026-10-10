@@ -1,0 +1,61 @@
+# 部署到 GitHub Pages：每次推送到 main（或 master）就自動建置並發布網站。
+# 第一次使用前，請到 GitHub 儲存庫的 Settings → Pages，
+# 把 Build and deployment 的 Source 設成「GitHub Actions」。
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+  # 也可以在 GitHub 的 Actions 頁面手動按「Run workflow」重新部署
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一時間只跑一次部署；新的推送會排在後面，不會中斷正在進行的部署
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      # 取得 GitHub Pages 的網址與子路徑（例如 https://帳號.github.io 與 /repo名稱）
+      - id: pages
+        uses: actions/configure-pages@v6
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck and build
+        run: npm run build
+        env:
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - name: Smoke tests
+        run: npm run test:smoke
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

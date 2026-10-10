@@ -1,41 +1,37 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, isAbsolute, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const DIST = resolve(new URL('../dist/', import.meta.url).pathname);
-// Marketing routes exist once per locale (src/pages/ vs src/pages/fr/).
-const LOCALE_PREFIXES = ['', '/fr'];
-const MARKETING_ROUTES = [
-  '/',
-  '/products/',
-  '/products/item-a765/',
-  '/services/',
-  '/blog/',
-  '/blog/post-1/',
-  '/insights/insight-1/',
-  '/contact/',
-];
+const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const ROUTES = [
-  ...LOCALE_PREFIXES.flatMap(prefix =>
-    MARKETING_ROUTES.map(route => `${prefix}${route}`)
-  ),
+  '/',
+  '/career/',
+  '/resources/',
+  '/resources/business-frameworks/',
+  '/partners/',
+  '/venues/',
+  '/interviews/2026-pm-chen/',
+  '/interviews/',
+  '/activities/',
+  '/recruit/',
+  '/about-us/',
   '/404',
-  '/fr/404/',
 ];
 
 // Cheap content assertions on top of the status check.
 const EXPECTATIONS = {
-  '/fr/': [
-    '<html lang="fr"',
-    '<meta property="og:locale" content="fr_FR"',
-    'hreflang="en" href="https://screwfast.uk"',
-  ],
-  '/': ['<html lang="en"', 'hreflang="fr" href="https://screwfast.uk/fr"'],
-  '/fr/404/': ['<html lang="fr"'],
-  '/contact/': ['data-demo-form', 'data-demo-status'],
-  '/fr/contact/': ['data-demo-form', 'data-demo-status'],
-  '/blog/post-1/': ['"@type":"BlogPosting"'],
-  '/fr/blog/post-1/': ['"inLanguage":"fr"'],
+  '/': ['<html lang="zh-TW"', '<meta property="og:locale" content="zh_TW"', 'id="faq"'],
+  '/career/': ['/interviews/2026-pm-chen/', 'id="interviews"', 'id="internships"'],
+  '/partners/': ['mailto:'],
+  '/resources/': ['data-resource-tabs', 'id="exams"', '/resources/business-frameworks/', 'mergersandinquisitions.com/400-questions'],
+  '/resources/business-frameworks/': ['五力分析', '"@type":"Article"'],
+  '/venues/': ['venue-schedule-data', 'data-week-body', '105 教室', '討論桌 1'],
+  '/interviews/2026-pm-chen/': ['"@type":"Article"', 'interview-body'],
+  '/interviews/': ['/career#interviews'],
+  '/about-us/': ['id="team"', 'id="recruit"', '<details'],
+  '/recruit/': ['/about-us#recruit'],
+  '/activities/': ['id="welcome"', 'id="key"', '管理之鑰'],
 };
 
 const MIME = {

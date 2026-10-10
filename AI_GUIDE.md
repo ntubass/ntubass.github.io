@@ -1,18 +1,14 @@
-# ScrewFast AI Guide
+# AI Guide
 
-For AI assistants (Cursor, Copilot, Claude, ChatGPT): this file describes project structure, conventions, and where to find or add code. See [README.md](README.md) for human-facing setup and features, and [CONTEXT.md](CONTEXT.md) for the names of the main modules.
+For AI assistants: project structure, conventions, and where to find or add code. See [CONTEXT.md](CONTEXT.md) for the names of the main modules.
 
 ## Project Overview
 
-ScrewFast is an Astro + Tailwind CSS + Preline UI template for landing pages, blogs, documentation, and product/content pages. Stack: Astro 7, Tailwind v4 (via `@tailwindcss/vite`), Preline (modals, accordions), Starlight (docs), Lenis (smooth scroll), GSAP (animations).
+A student-club website built with Astro 7, Tailwind CSS v4 (via `@tailwindcss/vite`), Preline (accordions, collapse) and Lenis (smooth scroll). Published in Traditional Chinese only (`zh-tw`, unprefixed URLs), but every page still reads its locale and copy through `Astro.locals`, so a language can be added later (see below).
 
-Marketing site locales: **en** and **fr**. Routes live under `src/pages/` and `src/pages/fr/`, but each route file is a one-line shell around a shared view in `src/views/` that takes the locale as a prop. Everything locale-related lives in [`src/utils/locale.ts`](src/utils/locale.ts); the current locale and its copy table are on `Astro.locals.locale` / `Astro.locals.copy` (set by [`src/middleware.ts`](src/middleware.ts)). Never parse `/fr` out of a pathname or hard-code a locale prefix elsewhere.
-
-Docs (Starlight) locales: en, de, es, fa, fr, ja, zh-cn. Guides and welcome are translated; `construction/`, `tools/`, and `advanced/` fall back to English for non-root locales.
+Routes (nav order): `/` (home), `/activities` (timeline from `src/data_files/activities.ts`), `/career` (interviews, career talks, mentorship, job resources, internship-experience link; interview pages at `/interviews/[id]`), `/resources` (field tabs + separate 考古題 block; cards from `src/content/resources/zh-tw/*.md`, link-out or article pages at `/resources/[id]`), `/partners`, `/venues` (weekly booking schedule rendered client-side from `src/data_files/venues.ts`), `/about-us` (story, team, contact, then recruitment at `#recruit`), `/404`. `/interviews` redirects into `/career#interviews` and `/recruit` into `/about-us#recruit` (see `redirects` in `astro.config.mjs`).
 
 ## Path Aliases
-
-Use these imports so paths stay correct and consistent:
 
 | Alias           | Resolves to            |
 | --------------- | ---------------------- |
@@ -26,57 +22,45 @@ Use these imports so paths stay correct and consistent:
 | `@utils/*`      | `src/utils/*`          |
 | `@views/*`      | `src/views/*`          |
 
-Example: `import { SITE } from "@data/constants";` – do not use `@/data_files/constants`.
+## Where things live
 
-Defined in [tsconfig.json](tsconfig.json).
-
-## Key Folders
-
-| Purpose                 | Path                               | Notes                                                                                                                                                                                                                                                                                                                                                          |
-| ----------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Reusable UI & sections  | [src/components/](src/components/) | `sections/` for landing, features, navbar&footer, testimonials, pricing, misc; `ui/` for buttons, cards, forms, icons, etc.                                                                                                                                                                                                                                    |
-| Layout                  | [src/layouts/](src/layouts/)       | [MainLayout.astro](src/layouts/MainLayout.astro) wraps Navbar, main slot, FooterSection and builds the whole `<head>` from `title`/`description`/`ogTitle`/`kind`.                                                                                                                                                                                             |
-| Views                   | [src/views/](src/views/)           | One `.astro` per route (`HomeView`, `ServicesView`, `BlogPostView`, …). Interface: `locale` (or a content entry, whose locale is its own). All page copy comes from `src/copy/`.                                                                                                                                                                               |
-| Pages                   | [src/pages/](src/pages/)           | Astro file-based routing; `fr/` mirrors it. Each file renders a view for its locale; `[id]` routes get `getStaticPaths` from `staticPathsFor()` in `@utils/content`.                                                                                                                                                                                           |
-| Copy tables             | [src/copy/](src/copy/)             | `en.ts` defines the shape (`Copy`); `fr.ts` must match it or `astro check` fails. Every UI and page string lives here. Read via `Astro.locals.copy` or `getCopy(locale)`.                                                                                                                                                                                      |
-| Content (collections)   | [src/content/](src/content/)       | `blog/`, `products/`, `insights/` with `en/` and `fr/` subfolders; `docs/` for Starlight. Use `entriesFor()`, `pathFor()`, `localeOf()` from [`src/utils/content.ts`](src/utils/content.ts), never parse `entry.id`.                                                                                                                                           |
-| Static assets           | [public/](public/)                 | Served as-is.                                                                                                                                                                                                                                                                                                                                                  |
-| Utilities               | [src/utils/](src/utils/)           | [locale.ts](src/utils/locale.ts) (locales, `resolveLocale`, `localePath`, `alternatePaths`), [content.ts](src/utils/content.ts), [metadata.ts](src/utils/metadata.ts) (`buildPageMetadata`), [utils.ts](src/utils/utils.ts).                                                                                                                                   |
-| Site config & JSON data | [src/data_files/](src/data_files/) | [constants.ts](src/data_files/constants.ts): SITE, OG image, partnersData; [navigation.ts](src/data_files/navigation.ts) (nav/footer ids + paths, social URLs) and [mega_link.ts](src/data_files/mega_link.ts) (mega-menu ids/icons/URLs) — their labels live in `copy.nav`; faqs.json, features.json, pricing.json with `fr/` twins (exposed as `copy.data`). |
-| Styles & scripts        | [src/assets/](src/assets/)         | `styles/` (global.css, lenis.css, starlight); `scripts/` e.g. [lenisSmoothScroll.js](src/assets/scripts/lenisSmoothScroll.js), [demoForms.ts](src/assets/scripts/demoForms.ts).                                                                                                                                                                                |
-| Images (imported)       | [src/images/](src/images/)         | Use with `@images/`; processed by Astro.                                                                                                                                                                                                                                                                                                                       |
-
-## Layout and Main Components
-
-- **MainLayout** ([MainLayout.astro](src/layouts/MainLayout.astro)): Props `title?` (without site suffix), `description?`, `ogTitle?`, `section?` (OG title becomes `title | section | site`), `kind?` (`WebPage` | `BlogPosting` | `Article` | `Product`), `hideFooter?`. Passes them to `buildPageMetadata()` which produces title, description, OG/Twitter, canonical, hreflang and JSON-LD; [Meta.astro](src/components/Meta.astro) renders that plus favicons/manifest. Pages never hand-write schema.org objects.
-- **Homepage** ([HomeView.astro](src/views/HomeView.astro)): Composes AnnouncementBanner, HeroSection, ClientsSection, FeaturesGeneral, FeaturesNavs, TestimonialsSection, PricingSection, FAQ; copy from `getCopy(locale).home`, JSON data from `copy.data`.
-- **Icons** ([Icon.astro](src/components/ui/icons/Icon.astro)): `<Icon name="…" class="…" />`. `name` is typed (`IconName`); [icons.ts](src/components/ui/icons/icons.ts) holds geometry only, so size/colour/state classes are passed by the caller (colour with `text-*`).
-- **404**: `NotFoundView` is built at `/404` (en) and `/fr/404/` (fr); `vercel.json` rewrites missing `/fr/…` paths to the French one.
-- **Navbars**: `Navbar.astro` is used by MainLayout; `NavbarMegaMenu.astro` (mega menu on the Services link, links in `@data/mega_link`) is an alternative — swap the import in MainLayout to use it. Optional modules like this are template features even when nothing imports them; do not delete them.
-- **Demo forms** ([DemoForm.astro](src/components/ui/forms/DemoForm.astro)): wrap placeholder forms in `<DemoForm successMessage={…}>`; it owns the submit interception and status element. Do not emit `data-demo-*` attributes by hand.
+| Purpose                 | Path                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| All page text           | [src/copy/zh-tw.ts](src/copy/zh-tw.ts) (defines the `Copy` shape) |
+| Site name, email, URL   | [src/data_files/constants.ts](src/data_files/constants.ts)  |
+| Nav links, social links | [src/data_files/navigation.ts](src/data_files/navigation.ts) |
+| Officer roster          | [src/data_files/team.ts](src/data_files/team.ts); photos in `src/images/team/` |
+| Partner logo wall       | [src/data_files/partners.ts](src/data_files/partners.ts); logos in `src/images/partners/` |
+| Recruiting on/off, form | [src/data_files/recruit.ts](src/data_files/recruit.ts)      |
+| Page banner photos      | `src/images/heroes/*.jpg` (one per page, see `CREDITS.md` there); rendered by `PageHero` |
+| Venues & bookings       | [src/data_files/venues.ts](src/data_files/venues.ts) (venues, bookings, form URL) |
+| Activity timeline       | [src/data_files/activities.ts](src/data_files/activities.ts) (name, time, intro, website, photos) |
+| Interviews / resources | `src/content/{interviews,resources}/zh-tw/*.md`, schemas in [content.config.ts](src/content.config.ts) |
+| Views (one per route)   | [src/views/](src/views/); `src/pages/` files are one-line shells |
+| Layout                  | [src/layouts/MainLayout.astro](src/layouts/MainLayout.astro) builds `<head>` via `buildPageMetadata()` |
+| Shared section pieces   | `components/ui/blocks/` (Section, SectionHeader, FeatureGrid, Timeline), `components/sections/` |
 
 ## Conventions
 
-- **Locale:** `Astro.locals.locale` / `Astro.locals.copy` (set by the middleware from the URL) are the single source; MainLayout, Navbar, Footer and every leaf read them. Views receive `locale` as a prop only so the route shells are explicit; it always equals `Astro.locals.locale`. Build links with `localePath(locale, '/products')`.
-- **Copy:** no user-facing strings in components or views; add a key to `src/copy/en.ts` and `src/copy/fr.ts`. Structure (paths, ids, URLs) lives in `src/data_files/`, labels in copy keyed by id; keys, not translated labels, drive logic (e.g. `badge: 'hiring'`).
-- **Content URLs:** `pathFor(entry)` from `@utils/content`; cards take an entry and nothing else.
-- **Styling:** Tailwind CSS only; use **Tailwind v4** syntax (refer to Tailwind v4 docs).
-- **Interactive UI:** Preline for modals, dropdowns, accordions (script loaded in MainLayout).
-- **Smooth scroll:** Lenis via [lenisSmoothScroll.js](src/assets/scripts/lenisSmoothScroll.js).
-- **Content collections:** Schemas in [content.config.ts](src/content.config.ts) (blog, products, insights, docs).
+- **Copy:** no user-facing strings in components or views; add keys to `src/copy/zh-tw.ts`. Structure (paths, ids, URLs, rosters) lives in `src/data_files/`.
+- **Content URLs:** `pathFor(entry)` / `entriesFor()` / `staticPathsFor()` from `@utils/content`; never parse `entry.id`.
+- **Locale:** `Astro.locals.locale` / `Astro.locals.copy` (set by `src/middleware.ts`). Build links with `localePath(locale, '/career')`.
+- **Styling:** Tailwind v4 syntax only. Palette is limited to the colours in `global.css` (`neutral`, `yellow`, `orange`, `zinc`, `gray`, `indigo`, `red`).
+- **Icons:** `<Icon name="…" class="…" />`; geometry in `components/ui/icons/icons.ts`.
 
-## Development Commands
+## Adding a language later
 
-- `pnpm dev` – run dev server
-- `pnpm build` – typecheck (`astro check`), build, then HTML processing ([process-html.mjs](process-html.mjs))
-- `pnpm preview` – preview production build
-- `pnpm test:smoke` – serve `dist/` and check every marketing route in both locales ([scripts/smoke.mjs](scripts/smoke.mjs))
+Extend `MARKETING_LOCALES` and `LOCALE_INFO` in `src/utils/locale.ts`, add `src/copy/<locale>.ts` typed as `Copy`, add `src/pages/<locale>/` shells, and add content under `src/content/*/<locale>/`.
 
-## Recommendations for AI
+## Commands
 
-- Use **path aliases** (`@components`, `@data`, `@images`, `@views`, etc.) in suggested code.
-- To change a page, edit its view in [src/views/](src/views/) and its strings in [src/copy/](src/copy/); do not duplicate a page into `src/pages/fr/`.
-- To add a locale: extend `MARKETING_LOCALES` and `LOCALE_INFO` in `locale.ts`, add `src/copy/<locale>.ts`, add `src/pages/<locale>/` shells, add content under `src/content/*/<locale>/`.
-- Put new reusable components under [src/components/](src/components/) (choose `sections/` or `ui/` by purpose).
-- Add or edit content in [src/content/](src/content/) and respect [content.config.ts](src/content.config.ts) schemas.
-- Use **Tailwind v4** only; do not use Tailwind v3 syntax.
+- `npm run dev`: dev server
+- `npm run build`: `astro check` + build + HTML minify
+- `npm run test:smoke`: serve `dist/` and check every route
+
+## Deploy (GitHub Pages)
+
+- `.github/workflows/deploy.yml` builds and publishes on every push to `main`/`master`. Repo Settings → Pages → Source must be **GitHub Actions**.
+- The workflow passes `SITE_URL` and `BASE_PATH` from `actions/configure-pages`, so the site works both at `https://<user>.github.io/` and at `https://<user>.github.io/<repo>/`.
+- Internal links must go through `localePath()` (pages) or `withBase()` (files in `public/`); never hard-code `/something` in `href`/`src`, or it breaks under a subpath.
+- Local subpath test (Git Bash): `MSYS_NO_PATHCONV=1 BASE_PATH=/babasite npm run build && npx astro preview`.

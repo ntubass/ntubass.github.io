@@ -1,0 +1,171 @@
+---
+import { Image } from 'astro:assets';
+import { render, type CollectionEntry } from 'astro:content';
+import MainLayout from '@/layouts/MainLayout.astro';
+import ArrowLink from '@components/ui/links/ArrowLink.astro';
+import Icon from '@components/ui/icons/Icon.astro';
+import { getCopy } from '@/copy';
+import { entriesFor, localeOf, pathFor, slugOf } from '@utils/content';
+import { localePath } from '@utils/locale';
+import { formatDate } from '@utils/utils';
+
+/**
+ * 單一職涯訪談頁：標題 → 受訪者資料卡 → 金句 → 問答內文 → 更多訪談。
+ * 內文寫在 `src/content/interviews/` 的 Markdown，`### 問題` 會顯示成提問樣式。
+ */
+interface Props {
+  interview: CollectionEntry<'interviews'>;
+}
+
+const { interview } = Astro.props;
+const locale = localeOf(interview);
+const copy = getCopy(locale).interviews;
+const { title, summary, date, interviewee, industry, quote, photo, photoAlt, writers } =
+  interview.data;
+const { Content } = await render(interview);
+
+// 文章最後推薦其他訪談（最多兩篇）
+const more = (await entriesFor('interviews', locale))
+  .filter(entry => slugOf(entry) !== slugOf(interview))
+  .slice(0, 2);
+---
+
+<MainLayout
+  title={title}
+  description={summary}
+  section={copy.ogSection}
+  kind={{ type: 'Article', image: photo?.src ?? '' }}
+>
+  <article class="mx-auto max-w-3xl px-4 pt-16 pb-16 sm:px-6 lg:pt-24">
+    <ArrowLink
+      url={localePath(locale, '/career#interviews')}
+      title={copy.back}
+      back
+    />
+
+    <div class="mt-6 flex flex-wrap items-center gap-3 text-sm font-semibold">
+      <time
+        datetime={date.toISOString()}
+        class="text-orange-400 dark:text-orange-300"
+      >
+        {formatDate(date, locale)}
+      </time>
+      {industry && (
+        <span class="rounded-full bg-neutral-300/60 px-3 py-1 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">
+          {industry}
+        </span>
+      )}
+    </div>
+    <h1 class="mt-4 text-2xl font-bold tracking-tight text-neutral-800 md:text-4xl dark:text-neutral-200">
+      {title}
+    </h1>
+
+    {/* 受訪者資料卡 */}
+    <div class="mt-8 flex items-center gap-x-5 rounded-2xl border border-neutral-300/60 bg-neutral-50 p-5 dark:border-neutral-700 dark:bg-neutral-900/50">
+      {photo ? (
+        <Image
+          src={photo}
+          alt={photoAlt ?? interviewee.name}
+          class="h-20 w-20 shrink-0 rounded-full object-cover md:h-24 md:w-24"
+          width={192}
+          height={192}
+        />
+      ) : (
+        <span
+          class="inline-flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-2xl font-bold text-neutral-800 md:h-24 md:w-24"
+          aria-hidden="true"
+        >
+          {interviewee.name.charAt(0)}
+        </span>
+      )}
+      <div class="min-w-0">
+        <p class="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+          {copy.interviewee}
+        </p>
+        <p class="text-xl font-bold text-neutral-800 dark:text-neutral-200">
+          {interviewee.name}
+        </p>
+        <p class="text-neutral-700 dark:text-neutral-300">
+          {interviewee.position}
+        </p>
+        {interviewee.background && (
+          <p class="text-sm text-neutral-500 dark:text-neutral-400">
+            {interviewee.background}
+          </p>
+        )}
+      </div>
+    </div>
+
+    {/* 金句 */}
+    {quote && (
+      <figure class="mt-10 border-s-4 border-yellow-400 ps-5">
+        <Icon name="quotation" class="h-8 w-8 text-yellow-400" />
+        <blockquote class="mt-2 text-xl leading-relaxed font-bold text-pretty text-neutral-800 md:text-2xl dark:text-neutral-200">
+          {quote}
+        </blockquote>
+      </figure>
+    )}
+
+    {/* 問答內文：### 標題是提問，下面的段落是回答 */}
+    <div class="interview-body prose prose-neutral mt-10 max-w-none md:prose-lg dark:prose-invert prose-headings:text-neutral-800 prose-h3:text-lg md:prose-h3:text-xl dark:prose-headings:text-neutral-200">
+      <Content />
+    </div>
+
+    {writers && (
+      <p class="mt-12 border-t border-neutral-300 pt-6 text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+        {`${copy.writers}：${writers}`}
+      </p>
+    )}
+
+    {/* 更多訪談 */}
+    {more.length > 0 && (
+      <aside class="mt-16">
+        <h2 class="mb-4 text-xl font-bold text-neutral-800 dark:text-neutral-200">
+          {copy.moreTitle}
+        </h2>
+        <ul class="grid gap-4 sm:grid-cols-2">
+          {more.map(entry => (
+            <li>
+              <a
+                href={pathFor(entry)}
+                class="group block h-full rounded-2xl border border-neutral-300/60 bg-neutral-50 p-5 transition hover:shadow-md dark:border-neutral-700 dark:bg-neutral-900/50"
+              >
+                <p class="text-sm text-neutral-500 dark:text-neutral-400">
+                  {`${entry.data.interviewee.name} · ${entry.data.interviewee.position}`}
+                </p>
+                <p class="mt-1 font-bold text-neutral-800 group-hover:text-orange-400 dark:text-neutral-200 dark:group-hover:text-orange-300">
+                  {entry.data.title}
+                </p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
+  </article>
+</MainLayout>
+
+<style>
+  /* 提問：在 ### 前面加上「Q」標記，和回答做出區隔 */
+  .interview-body :global(h3) {
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+    margin-top: 2.5em;
+  }
+  .interview-body :global(h3)::before {
+    content: 'Q';
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    background: var(--color-yellow-400);
+    color: var(--color-neutral-800);
+    font-size: 0.9rem;
+    font-weight: 700;
+    transform: translateY(-0.1rem);
+  }
+</style>

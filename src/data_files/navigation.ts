@@ -1,56 +1,37 @@
 /**
- * Navigation structure shared by every locale: stable ids, unlocalised paths
- * and social URLs. The label for each id lives in the copy tables
- * (`copy.nav.labels`, `copy.nav.footer.sections`), so translators never touch
- * a path and code never keys on a translated label.
+ * 導覽結構：每個連結的 id 與網址。顯示的文字在 `copy.nav.labels`（以 id 對應），
+ * 所以改文字不用動這裡，改網址不用動文案。
  */
-export type NavLinkId = 'home' | 'products' | 'services' | 'blog' | 'contact';
+export type NavLinkId =
+  | 'home'
+  | 'activities'
+  | 'career'
+  | 'resources'
+  | 'partners'
+  | 'venues'
+  | 'about';
 
-export const navLinks: { id: NavLinkId; path: string }[] = [
-  { id: 'home', path: '/' },
-  { id: 'products', path: '/products' },
-  { id: 'services', path: '/services' },
-  { id: 'blog', path: '/blog' },
-  { id: 'contact', path: '/contact' },
-];
-
-export type FooterSectionId = 'ecosystem' | 'company';
-export type FooterLinkId =
-  | 'documentation'
-  | 'tools'
-  | 'services'
-  | 'about'
-  | 'blog'
-  | 'careers'
-  | 'customers';
-
-export const footerSections: {
-  id: FooterSectionId;
-  links: { id: FooterLinkId; path: string; badge?: 'hiring' }[];
+/**
+ * 導覽列的順序就是這裡的順序。`alsoActiveOn`：在這些網址底下時，這個選項也會亮起來
+ * （例如訪談頁 /interviews/xxx/ 屬於職涯發展）。
+ */
+export const navLinks: {
+  id: NavLinkId;
+  path: string;
+  alsoActiveOn?: string[];
 }[] = [
-  {
-    id: 'ecosystem',
-    links: [
-      { id: 'documentation', path: '/welcome-to-docs/' },
-      { id: 'tools', path: '/products' },
-      { id: 'services', path: '/services' },
-    ],
-  },
-  {
-    id: 'company',
-    links: [
-      { id: 'about', path: '#' },
-      { id: 'blog', path: '/blog' },
-      { id: 'careers', path: '#', badge: 'hiring' },
-      { id: 'customers', path: '#' },
-    ],
-  },
+  { id: 'home', path: '/' },
+  { id: 'activities', path: '/activities' },
+  { id: 'career', path: '/career', alsoActiveOn: ['/interviews'] },
+  { id: 'resources', path: '/resources' },
+  { id: 'partners', path: '/partners' },
+  { id: 'venues', path: '/venues' },
+  { id: 'about', path: '/about-us' },
 ];
 
+/** 社群連結：沒有的平台留空字串，頁尾就不會顯示 */
 export const socialLinks = {
+  instagram: 'https://www.instagram.com/ntubasa_/',
   facebook: 'https://www.facebook.com/',
-  x: 'https://twitter.com/',
-  github: 'https://github.com/mearashadowfax/ScrewFast',
-  google: 'https://www.google.com/',
-  slack: 'https://slack.com/',
+  linkedIn: 'https://www.linkedin.com/',
 };

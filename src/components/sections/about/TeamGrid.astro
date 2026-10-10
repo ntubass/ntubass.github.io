@@ -1,0 +1,104 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Icon from '@components/ui/icons/Icon.astro';
+import { departments } from '@data/team';
+
+/**
+ * 幹部名單，每個部門一張卡片（一排一張，內容置中，照片大小一致）。`compact` 只顯示部門與成員姓名（首頁用），
+ * 否則卡片內列出部門介紹與每位成員的照片、姓名、職稱（關於我們頁用）。
+ * 名單在 `src/data_files/team.ts`，照片放在 `src/images/team/`。
+ */
+interface Props {
+  compact?: boolean;
+  /** Centre the text in the compact cards. */
+  centered?: boolean;
+}
+
+const { compact = false, centered = false } = Astro.props;
+const cardClass =
+  'rounded-2xl border border-neutral-300/60 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900/50';
+
+// 讀進 src/images/team/ 裡所有照片，讓 team.ts 只要寫檔名就好
+const photoFiles = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/images/team/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true }
+);
+function photoOf(filename: string): ImageMetadata {
+  const photo = photoFiles[`/src/images/team/${filename}`];
+  if (!photo) {
+    throw new Error(
+      `找不到幹部照片 src/images/team/${filename}，請確認檔名（含副檔名、大小寫）是否正確。`
+    );
+  }
+  return photo.default;
+}
+---
+
+{
+  compact ? (
+    <ul class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      {departments.map(dept => (
+        <li class:list={[cardClass, 'p-5', centered && 'text-center']}>
+          <h3 class="text-lg font-bold text-neutral-800 dark:text-neutral-200">
+            {dept.name}
+          </h3>
+          <p class="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+            {dept.members.map(member => member.name).join('、')}
+          </p>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <div class="space-y-6">
+      {departments.map(dept => (
+        <article class:list={[cardClass, 'p-6 text-center md:p-10']}>
+          <h3 class="text-xl font-bold text-neutral-800 dark:text-neutral-200">
+            {dept.name}
+          </h3>
+          <p class="mx-auto mt-2 max-w-2xl text-pretty text-neutral-600 dark:text-neutral-400">
+            {dept.description}
+          </p>
+          <ul class="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-8 border-t border-neutral-300/60 pt-8 sm:gap-x-6 dark:border-neutral-700">
+            {dept.members.map(member => (
+              <li class="w-32 sm:w-44">
+                <div class="aspect-[4/5] overflow-hidden rounded-xl bg-neutral-200 dark:bg-neutral-800">
+                  {member.photo ? (
+                    <Image
+                      src={photoOf(member.photo)}
+                      alt={member.name}
+                      class="h-full w-full object-cover"
+                      width={400}
+                      height={500}
+                    />
+                  ) : (
+                    <div class="flex h-full w-full items-center justify-center text-neutral-400 dark:text-neutral-600">
+                      <Icon name="user" class="h-1/3 w-1/3" />
+                    </div>
+                  )}
+                </div>
+                {member.linkedin ? (
+                  <a
+                    href={member.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="mt-3 inline-block font-bold text-neutral-800 underline-offset-2 hover:text-orange-400 hover:underline dark:text-neutral-200 dark:hover:text-orange-300"
+                  >
+                    {member.name}
+                  </a>
+                ) : (
+                  <p class="mt-3 font-bold text-neutral-800 dark:text-neutral-200">
+                    {member.name}
+                  </p>
+                )}
+                <p class="text-sm text-neutral-500 dark:text-neutral-400">
+                  {member.title}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+  )
+}

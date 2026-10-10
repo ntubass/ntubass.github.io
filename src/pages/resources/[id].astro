@@ -1,0 +1,14 @@
+---
+import ResourceArticleView from '@views/ResourceArticleView.astro';
+import { staticPathsFor } from '@utils/content';
+
+// 只有「沒有外部連結、而且有寫內文」的資源才會產生文章頁
+export const getStaticPaths = async () =>
+  (await staticPathsFor('resources', 'zh-tw')).filter(
+    ({ props }) => !props.entry.data.url && props.entry.body?.trim()
+  );
+
+const { entry } = Astro.props;
+---
+
+<ResourceArticleView resource={entry} />

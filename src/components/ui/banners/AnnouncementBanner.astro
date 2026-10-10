@@ -1,5 +1,6 @@
 ---
 import Icon from '@components/ui/icons/Icon.astro';
+import { withBase } from '@utils/locale';
 
 const { title, btnId, btnTitle, url } = Astro.props;
 const { copy: t } = Astro.locals;
@@ -20,7 +21,10 @@ const storageKey = `banner-dismissed:${btnId}`;
     role="region"
     aria-label={t.banner.region}
   >
-    <div class="rounded-xl bg-neutral-800 bg-[url('/banner-pattern.svg')] bg-cover bg-center bg-no-repeat p-4 text-center shadow-xs dark:bg-neutral-200">
+    <div
+      class="rounded-xl bg-neutral-800 bg-cover bg-center bg-no-repeat p-4 text-center shadow-xs dark:bg-neutral-200"
+      style={`background-image: url('${withBase('/banner-pattern.svg')}')`}
+    >
       <div class="flex items-center justify-center">
         <div class="ml-auto">
           {title && (
@@ -31,7 +35,7 @@ const storageKey = `banner-dismissed:${btnId}`;
           <a
             class="group inline-flex items-center gap-x-2 rounded-full border-2 border-neutral-50 px-3 py-2 text-sm font-semibold text-neutral-50 backdrop-brightness-75 transition duration-300 hover:border-neutral-100/70 hover:text-neutral-50/70 disabled:pointer-events-none disabled:opacity-50 sm:backdrop-brightness-100 dark:border-neutral-700 dark:text-neutral-700 dark:backdrop-brightness-100 dark:hover:border-neutral-700/70 dark:hover:text-neutral-800/70 dark:focus:outline-hidden"
             href={url}
-            target="_blank"
+            target={/^https?:/.test(url) ? '_blank' : undefined}
           >
             {btnTitle}
             <Icon

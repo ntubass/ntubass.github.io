@@ -1,0 +1,33 @@
+---
+/** Vertical timeline of dated steps (系學會的一年, 招募流程). */
+interface Step {
+  date: string;
+  title?: string;
+  description: string;
+}
+
+interface Props {
+  steps: Step[];
+}
+
+const { steps } = Astro.props;
+---
+
+<ol class="relative ms-3 border-s-2 border-yellow-400/60">
+  {steps.map(step => (
+    <li class="ms-6 pb-8 last:pb-0">
+      <span class="absolute -start-[9px] mt-1.5 h-4 w-4 rounded-full border-2 border-neutral-200 bg-yellow-400 dark:border-neutral-800" />
+      <p class="text-sm font-bold text-orange-400 dark:text-orange-300">
+        {step.date}
+      </p>
+      {step.title && (
+        <h3 class="mt-1 text-lg font-bold text-neutral-800 dark:text-neutral-200">
+          {step.title}
+        </h3>
+      )}
+      <p class="mt-1 text-neutral-600 dark:text-neutral-400">
+        {step.description}
+      </p>
+    </li>
+  ))}
+</ol>

@@ -1,24 +1,29 @@
 ---
 import MainLayout from '@/layouts/MainLayout.astro';
-import HeroSection from '@components/sections/landing/HeroSection.astro';
-import HeroSectionAlt from '@components/sections/landing/HeroSectionAlt.astro';
-import ClientsSection from '@components/sections/landing/ClientsSection.astro';
-import FeaturesGeneral from '@components/sections/features/FeaturesGeneral.astro';
-import FeaturesNavs from '@components/sections/features/FeaturesNavs.astro';
-import TestimonialsSection from '@components/sections/testimonials/TestimonialsSection.astro';
-import PricingSection from '@components/sections/pricing/PricingSection.astro';
-import FAQ from '@components/sections/misc/FAQ.astro';
 import AnnouncementBanner from '@components/ui/banners/AnnouncementBanner.astro';
-import heroImage from '@images/hero-image.avif';
-import featureImage from '@images/features-image.avif';
-import construction from '@images/construction-image.avif';
-import tools from '@images/automated-tools.avif';
-import dashboard from '@images/dashboard-image.avif';
-import { partnersData } from '@data/constants';
+import PrimaryCTA from '@components/ui/buttons/PrimaryCTA.astro';
+import SecondaryCTA from '@components/ui/buttons/SecondaryCTA.astro';
+import Section from '@components/ui/blocks/Section.astro';
+import SectionHeader from '@components/ui/blocks/SectionHeader.astro';
+import FeatureGrid from '@components/ui/blocks/FeatureGrid.astro';
+import ArrowLink from '@components/ui/links/ArrowLink.astro';
+import TeamGrid from '@components/sections/about/TeamGrid.astro';
+import PageHero from '@components/sections/landing/PageHero.astro';
+import heroImage from '@images/heroes/home.jpg';
+import FAQ from '@components/sections/misc/FAQ.astro';
+import Icon from '@components/ui/icons/Icon.astro';
+import { RECRUIT } from '@data/recruit';
+import { activities } from '@data/activities';
+import { departments } from '@data/team';
+import { venues } from '@data/venues';
 import { getCopy } from '@/copy';
 import { localePath, type MarketingLocale } from '@utils/locale';
 
-/** The home page in one locale. Copy comes from the locale's copy table. */
+/**
+ * 首頁，區塊由上到下：
+ * Hero → 系學會在做什麼（含數字）→ 我們重視的事 → 活動成果
+ * → 幹部團隊 → 幹部心得 → 常見問題
+ */
 interface Props {
   locale: MarketingLocale;
 }
@@ -27,94 +32,162 @@ const { locale } = Astro.props;
 const t = getCopy(locale);
 const copy = t.home;
 
-const avatarSrcs: Array<string> = [
-  'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-  'https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
-  'https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&&auto=format&fit=facearea&facepad=3&w=300&h=300&q=80',
-  'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80',
+// 首頁的數字由網站上的資料自動計算，資料改了數字就會跟著變
+const stats = [
+  { value: activities.length, label: copy.mission.statLabels.activities },
+  { value: departments.length, label: copy.mission.statLabels.departments },
+  { value: venues.length, label: copy.mission.statLabels.venues },
+  { value: t.resources.sections.length, label: copy.mission.statLabels.fields },
 ];
-
-const testimonials = copy.testimonials.quotes.map(quote => ({
-  ...quote,
-  avatarSrc:
-    'https://images.unsplash.com/photo-1593104547489-5cfb3839a3b5?q=80&w=1453&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80',
-}));
 ---
 
 <MainLayout>
-  <AnnouncementBanner
-    btnId="dismiss-button"
-    btnTitle={copy.banner}
-    url="https://github.com/mearashadowfax/ScrewFast"
-  />
+  {RECRUIT.isOpen && (
+    <AnnouncementBanner
+      btnId="recruit-banner-dismiss"
+      title={copy.banner.text}
+      btnTitle={copy.banner.btn}
+      url={localePath(locale, '/about-us#recruit')}
+    />
+  )}
 
-  <HeroSection
+  {/* Hero：照片在 src/images/heroes/home.jpg */}
+  <PageHero
     title={copy.hero.title}
     subTitle={copy.hero.subTitle}
-    primaryBtn={copy.hero.primaryBtn}
-    primaryBtnURL={localePath(locale, '/products')}
-    secondaryBtn={copy.hero.secondaryBtn}
-    secondaryBtnURL={localePath(locale, '/contact')}
-    withReview={true}
-    avatars={avatarSrcs}
-    rating={copy.hero.rating}
-    starCount={4}
-    reviews={copy.hero.reviews}
-    src={heroImage}
-    alt={copy.hero.imageAlt}
-  />
+    image={heroImage}
+    size="lg"
+  >
+    <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-center">
+      <PrimaryCTA
+        title={copy.hero.primaryBtn}
+        url={localePath(locale, '/activities')}
+      />
+      <SecondaryCTA
+        title={copy.hero.secondaryBtn}
+        url={localePath(locale, '/about-us#recruit')}
+      />
+    </div>
+  </PageHero>
 
-  <ClientsSection
-    title={copy.clients.title}
-    subTitle={copy.clients.subTitle}
-    partners={partnersData}
-  />
+  {/* 系學會在做什麼 + 數字 */}
+  <Section tone="muted">
+    <div class="mx-auto max-w-3xl text-center">
+      <SectionHeader title={copy.mission.title} align="center" />
+      <p class="-mt-4 text-lg leading-relaxed text-pretty text-neutral-700 dark:text-neutral-300">
+        {copy.mission.body}
+      </p>
+    </div>
+    <dl class="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {stats.map(stat => (
+          <div class="flex flex-col rounded-2xl bg-neutral-50 p-6 text-center dark:bg-neutral-800">
+            <dt class="text-sm text-neutral-600 dark:text-neutral-400">
+              {stat.label}
+            </dt>
+            <dd class="order-first text-3xl font-bold text-orange-400 lg:text-4xl dark:text-orange-300">
+              {stat.value}
+            </dd>
+          </div>
+        ))}
+    </dl>
+  </Section>
 
-  <FeaturesGeneral
-    title={copy.featuresGeneral.title}
-    subTitle={copy.featuresGeneral.subTitle}
-    src={featureImage}
-    alt={copy.featuresGeneral.imageAlt}
-    features={t.data.features}
-  />
+  {/* 我們重視的事 */}
+  <Section>
+    <SectionHeader
+      title={copy.values.title}
+      subTitle={copy.values.subTitle}
+      align="center"
+    />
+    <FeatureGrid items={copy.values.items} align="center" />
+  </Section>
 
-  <FeaturesNavs
-    title={copy.featuresNavs.title}
-    tabs={[
-      {
-        ...copy.featuresNavs.tabs.tools,
-        svg: 'tools',
-        src: tools,
-        first: true,
-      },
-      {
-        ...copy.featuresNavs.tabs.dashboard,
-        svg: 'dashboard',
-        src: dashboard,
-        second: true,
-      },
-      {
-        ...copy.featuresNavs.tabs.features,
-        svg: 'house',
-        src: construction,
-      },
-    ]}
-  />
+  {/* 活動成果 */}
+  {activities.length > 0 && (
+    <Section tone="muted">
+      <SectionHeader
+        title={copy.events.title}
+        subTitle={copy.events.subTitle}
+        align="center"
+      >
+        <ArrowLink
+          url={localePath(locale, '/activities')}
+          title={copy.events.cta}
+        />
+      </SectionHeader>
+      {/* 精簡版時間軸：每個活動一格，點了跳到活動成果頁的那個活動 */}
+      <ol class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
+        {activities.map((activity, i) => (
+          <li>
+            <a
+              href={localePath(locale, `/activities#${activity.id}`)}
+              class="group block h-full rounded-2xl border border-neutral-300/60 bg-neutral-50 p-4 text-center transition hover:-translate-y-1 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-900/50"
+            >
+              <span class="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-yellow-400 text-sm font-bold text-neutral-800">
+                {i + 1}
+              </span>
+              <span class="mt-2 block text-xs font-semibold text-orange-400 dark:text-orange-300">
+                {activity.time}
+              </span>
+              <span class="mt-1 block font-bold text-neutral-800 group-hover:text-orange-400 dark:text-neutral-200 dark:group-hover:text-orange-300">
+                {activity.name}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </Section>
+  )}
 
-  <TestimonialsSection
-    title={copy.testimonials.title}
-    subTitle={copy.testimonials.subTitle}
-    testimonials={testimonials}
-    statistics={copy.testimonials.statistics}
-  />
+  {/* 幹部團隊 */}
+  <Section>
+    <SectionHeader
+      title={copy.team.title}
+      subTitle={copy.team.subTitle}
+      align="center"
+    >
+      <ArrowLink url={localePath(locale, '/about-us')} title={copy.team.cta} />
+    </SectionHeader>
+    <TeamGrid compact centered />
+  </Section>
 
-  <PricingSection pricing={t.data.pricing} />
+  {/* 幹部心得 */}
+  <Section tone="muted">
+    <SectionHeader
+      title={copy.testimonials.title}
+      subTitle={copy.testimonials.subTitle}
+      align="center"
+    />
+    <div class="grid gap-6 md:grid-cols-3">
+      {copy.testimonials.quotes.map(quote => (
+        <figure class="flex flex-col rounded-2xl bg-neutral-50 p-6 dark:bg-neutral-800">
+          <Icon
+            name="quotation"
+            class="h-8 w-8 text-yellow-400"
+          />
+          <blockquote class="mt-4 grow text-pretty text-neutral-700 dark:text-neutral-300">
+            {quote.content}
+          </blockquote>
+          <figcaption class="mt-6 flex items-center gap-x-3">
+            <span
+              class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-yellow-400 font-bold text-neutral-800"
+              aria-hidden="true"
+            >
+              {quote.author.charAt(0)}
+            </span>
+            <span>
+              <span class="block font-bold text-neutral-800 dark:text-neutral-200">
+                {quote.author}
+              </span>
+              <span class="block text-sm text-neutral-500 dark:text-neutral-400">
+                {quote.role}
+              </span>
+            </span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </Section>
 
-  <FAQ title={copy.faqTitle} faqs={t.data.faqs} />
-
-  <HeroSectionAlt
-    title={copy.heroAlt.title}
-    subTitle={copy.heroAlt.subTitle}
-    url="https://github.com/mearashadowfax/ScrewFast"
-  />
+  <FAQ id="faq" title={t.faq.title} subTitle={t.faq.subTitle} faqs={t.faq.faqs} />
 </MainLayout>

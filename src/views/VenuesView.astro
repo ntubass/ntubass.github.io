@@ -1,0 +1,578 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import PageHero from '@components/sections/landing/PageHero.astro';
+import heroImage from '@images/heroes/venues.jpg';
+import Section from '@components/ui/blocks/Section.astro';
+import SectionHeader from '@components/ui/blocks/SectionHeader.astro';
+import Icon from '@components/ui/icons/Icon.astro';
+import { venues, bookings, VENUE_FORM_URL } from '@data/venues';
+import { socialLinks } from '@data/navigation';
+import { getCopy } from '@/copy';
+import type { MarketingLocale } from '@utils/locale';
+
+/**
+ * 場地借用：借用狀況（一週行事曆）→ 場地介紹（含進入方式）→ 借用辦法 → 使用規範。
+ * 場地與借用紀錄在 `src/data_files/venues.ts`；借用辦法與使用規範的文字在
+ * `copy.venues.howTo` 與 `copy.venues.rules`（內容依「工管系空間使用規章」）。
+ *
+ * 網站是事先產生好的，所以「本週」是在瀏覽器裡依照當天日期算出來的，
+ * 不需要每週重新部署；只有新增借用紀錄時才需要。
+ */
+interface Props {
+  locale: MarketingLocale;
+}
+
+const { locale } = Astro.props;
+const copy = getCopy(locale).venues;
+
+// 交給瀏覽器端的資料（行事曆在瀏覽器裡畫出來）
+const scheduleData = {
+  venues: venues.map(({ id, name, tables }) => ({ id, name, tables })),
+  bookings,
+  labels: copy.schedule,
+};
+---
+
+<MainLayout title={copy.title} description={copy.metaDescription}>
+  <PageHero
+    title={copy.title}
+    subTitle={copy.hero.subTitle}
+    image={heroImage}
+  />
+
+  {/* 借用狀況 */}
+  <Section id="schedule" tone="muted">
+    <SectionHeader
+      title={copy.schedule.title}
+      subTitle={copy.schedule.subTitle}
+    />
+
+    <div data-venue-schedule>
+      {/* 週切換 */}
+      <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <p
+          class="text-lg font-bold text-neutral-800 dark:text-neutral-200"
+          data-week-label
+        ></p>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="week-btn"
+            data-week-prev
+            aria-label={copy.schedule.prevWeek}
+          >
+            <Icon name="arrowRight" class="h-4 w-4 rotate-180" />
+            <span class="hidden sm:inline">{copy.schedule.prevWeek}</span>
+          </button>
+          <button type="button" class="week-btn" data-week-today>
+            {copy.schedule.thisWeek}
+          </button>
+          <button
+            type="button"
+            class="week-btn"
+            data-week-next
+            aria-label={copy.schedule.nextWeek}
+          >
+            <span class="hidden sm:inline">{copy.schedule.nextWeek}</span>
+            <Icon name="arrowRight" class="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* 電腦版：場地 × 星期 的表格 */}
+      <div class="hidden overflow-hidden rounded-2xl border border-neutral-300/60 bg-neutral-50 md:block dark:border-neutral-700 dark:bg-neutral-900/60">
+        <table class="w-full table-fixed border-collapse text-sm">
+          <thead data-week-head></thead>
+          <tbody data-week-body></tbody>
+        </table>
+      </div>
+
+      {/* 手機版：一天一張卡片 */}
+      <div class="space-y-3 md:hidden" data-week-days></div>
+
+      <noscript>
+        <p class="rounded-xl bg-neutral-50 p-4 text-neutral-600">
+          {copy.schedule.noscript}
+        </p>
+      </noscript>
+    </div>
+
+    <script
+      type="application/json"
+      id="venue-schedule-data"
+      set:html={JSON.stringify(scheduleData)}
+    />
+  </Section>
+
+  {/* 場地介紹 */}
+  <Section id="venues">
+    <SectionHeader title={copy.list.title} subTitle={copy.list.subTitle} />
+
+    {/* 進入方式 */}
+    <div class="mb-8 flex flex-col gap-4 rounded-2xl border border-yellow-400/60 bg-yellow-400/10 p-5 sm:flex-row sm:items-center sm:justify-between md:p-6">
+      <div class="flex gap-x-4">
+        <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-yellow-400 text-neutral-800">
+          <Icon name="user" class="h-6 w-6" />
+        </span>
+        <div>
+          <p class="font-bold text-neutral-800 dark:text-neutral-200">
+            {copy.access.title}：{copy.access.text}
+          </p>
+          <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+            {copy.access.help}
+          </p>
+        </div>
+      </div>
+      {socialLinks.instagram && (
+        <a
+          href={socialLinks.instagram}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex shrink-0 items-center gap-x-2 self-start rounded-xl bg-neutral-800 px-4 py-2.5 text-sm font-bold text-neutral-50 transition hover:bg-neutral-700 sm:self-center"
+        >
+          <Icon name="instagram" class="h-4 w-4" />
+          {copy.access.helpBtn}
+        </a>
+      )}
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {venues.map(venue => (
+        <article class="rounded-2xl border border-neutral-300/60 bg-neutral-50 p-6 dark:border-neutral-700 dark:bg-neutral-900/50">
+          <h3 class="text-xl font-bold text-neutral-800 dark:text-neutral-200">
+            {venue.name}
+          </h3>
+          {(venue.location || venue.capacity) && (
+            <dl class="mt-4 space-y-2 text-sm">
+              {venue.location && (
+                <div class="flex gap-x-2">
+                  <dt class="flex shrink-0 items-center gap-x-1.5 font-semibold text-neutral-500 dark:text-neutral-400">
+                    <Icon name="mapPin" class="h-4 w-4" />
+                    {copy.list.location}
+                  </dt>
+                  <dd class="text-neutral-700 dark:text-neutral-300">
+                    {venue.location}
+                  </dd>
+                </div>
+              )}
+              {venue.capacity && (
+                <div class="flex gap-x-2">
+                  <dt class="flex shrink-0 items-center gap-x-1.5 font-semibold text-neutral-500 dark:text-neutral-400">
+                    <Icon name="user" class="h-4 w-4" />
+                    {copy.list.capacity}
+                  </dt>
+                  <dd class="text-neutral-700 dark:text-neutral-300">
+                    {venue.capacity}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          )}
+          {venue.tables && (
+            <>
+              <p class="mt-4 text-sm text-neutral-600 dark:text-neutral-400">
+                {copy.list.tablesNote}
+              </p>
+              <ul class="mt-2 flex flex-wrap gap-2">
+                {venue.tables.map(table => (
+                  <li class="rounded-full bg-orange-400/15 px-3 py-1 text-sm font-semibold text-orange-600 dark:text-orange-300">
+                    {table}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {venue.notes && venue.notes.length > 0 && (
+            <ul class="mt-4 space-y-1.5 text-sm text-neutral-700 dark:text-neutral-300">
+              {venue.notes.map(note => (
+                <li class="flex gap-x-2">
+                  <Icon
+                    name="alert"
+                    class="mt-0.5 h-4 w-4 shrink-0 text-orange-500"
+                  />
+                  {note}
+                </li>
+              ))}
+            </ul>
+          )}
+          {venue.equipment && venue.equipment.length > 0 && (
+            <>
+              <p class="mt-4 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                {copy.list.equipment}
+              </p>
+              <ul class="mt-2 flex flex-wrap gap-2">
+                {venue.equipment.map(item => (
+                  <li class="rounded-full bg-yellow-400/25 px-3 py-1 text-sm text-neutral-800 dark:text-neutral-200">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  {/* 借用辦法 */}
+  <Section id="apply" tone="muted">
+    <SectionHeader title={copy.howTo.title} subTitle={copy.howTo.subTitle} />
+    <div class="grid gap-6 md:grid-cols-2">
+      {[copy.howTo.single, copy.howTo.whole].map((option, i) => (
+        <article class="flex flex-col rounded-2xl border border-neutral-300/60 bg-neutral-50 p-6 md:p-8 dark:border-neutral-700 dark:bg-neutral-900/60">
+          <div class="flex items-center gap-x-3">
+            <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-yellow-400 font-bold text-neutral-800">
+              {i + 1}
+            </span>
+            <h3 class="text-xl font-bold text-neutral-800 dark:text-neutral-200">
+              {option.title}
+            </h3>
+            <span class="rounded-full bg-orange-400/15 px-3 py-1 text-xs font-semibold text-orange-600 dark:text-orange-300">
+              {option.tag}
+            </span>
+          </div>
+          <ul class="mt-5 grow space-y-3">
+            {option.items.map(item => (
+              <li class="flex gap-x-2 text-neutral-700 dark:text-neutral-300">
+                <Icon
+                  name="checkCircle"
+                  class="mt-0.5 h-5 w-5 shrink-0 text-yellow-500"
+                />
+                {item}
+              </li>
+            ))}
+          </ul>
+          {'btn' in option &&
+            (VENUE_FORM_URL ? (
+              <a
+                href={VENUE_FORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-6 inline-flex items-center gap-x-2 self-start rounded-xl bg-yellow-400 px-5 py-3 font-bold text-neutral-800 transition hover:bg-yellow-500"
+              >
+                {option.btn}
+                <Icon name="openInNew" class="h-4 w-4" />
+              </a>
+            ) : (
+              <span class="mt-6 inline-flex cursor-not-allowed items-center self-start rounded-xl bg-neutral-200 px-5 py-3 font-bold text-neutral-400 dark:bg-neutral-800">
+                {option.btn}
+              </span>
+            ))}
+        </article>
+      ))}
+    </div>
+  </Section>
+
+  {/* 使用規範 */}
+  <Section id="rules">
+    <SectionHeader title={copy.rules.title} subTitle={copy.rules.subTitle} />
+    <ol class="grid gap-3 md:grid-cols-2">
+      {copy.rules.items.map((rule, i) => (
+        <li class="flex gap-x-4 rounded-2xl border border-neutral-300/60 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/50">
+          <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-sm font-bold text-yellow-400 dark:bg-neutral-700">
+            {i + 1}
+          </span>
+          <span class="pt-1 text-pretty text-neutral-700 dark:text-neutral-300">
+            {rule}
+          </span>
+        </li>
+      ))}
+    </ol>
+  </Section>
+</MainLayout>
+
+<style is:global>
+  .week-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-neutral-300);
+    background: var(--color-neutral-50);
+    padding: 0.45rem 0.9rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-neutral-700);
+    transition: background-color 0.2s;
+  }
+  .week-btn:hover {
+    background: var(--color-yellow-100);
+  }
+  .dark .week-btn {
+    border-color: var(--color-neutral-700);
+    background: var(--color-neutral-800);
+    color: var(--color-neutral-300);
+  }
+  .dark .week-btn:hover {
+    background: var(--color-neutral-700);
+  }
+  .booking-chip {
+    display: block;
+    border-radius: 0.6rem;
+    background: color-mix(in oklab, var(--color-yellow-400) 35%, transparent);
+    border-left: 3px solid var(--color-yellow-500);
+    padding: 0.35rem 0.5rem;
+    line-height: 1.3;
+    color: var(--color-neutral-800);
+  }
+  .dark .booking-chip {
+    color: var(--color-neutral-100);
+  }
+</style>
+
+<script>
+  type Booking = {
+    venue: string;
+    table?: number;
+    date: string;
+    start: string;
+    end: string;
+    by: string;
+    purpose?: string;
+  };
+  type Data = {
+    venues: { id: string; name: string; tables?: string[] }[];
+    bookings: Booking[];
+    labels: {
+      today: string;
+      free: string;
+      wholeRoom: string;
+      allFree: string;
+      weekdays: string[];
+    };
+  };
+
+  const root = document.querySelector<HTMLElement>('[data-venue-schedule]');
+  const raw = document.getElementById('venue-schedule-data')?.textContent;
+  if (root && raw) {
+    const data: Data = JSON.parse(raw);
+    const head = root.querySelector('[data-week-head]')!;
+    const body = root.querySelector('[data-week-body]')!;
+    const days = root.querySelector('[data-week-days]')!;
+    const label = root.querySelector('[data-week-label]')!;
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const iso = (d: Date) =>
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const short = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
+    const mondayOf = (d: Date) => {
+      const m = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      m.setDate(m.getDate() - ((m.getDay() + 6) % 7));
+      return m;
+    };
+    const el = (tag: string, cls = '', text = '') => {
+      const node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text) node.textContent = text;
+      return node;
+    };
+    const chip = (b: Booking, withVenue = '', tag = '') => {
+      const c = el('div', 'booking-chip');
+      // 例如「整間借用」：自己一行，不會在窄格子裡斷成兩半
+      if (tag)
+        c.append(
+          el(
+            'span',
+            'block text-[11px] font-bold whitespace-nowrap text-orange-600 dark:text-orange-300',
+            tag
+          )
+        );
+      c.append(el('span', 'block font-bold', `${b.start}–${b.end}`));
+      const who = [withVenue, b.by, b.purpose].filter(Boolean).join(' · ');
+      c.append(el('span', 'block text-xs opacity-80', who));
+      return c;
+    };
+
+    // 場地名稱（借討論桌時加上桌號，借整間時加上「整間」）
+    const placeOf = (b: Booking) => {
+      const v = data.venues.find(x => x.id === b.venue);
+      if (!v) return b.venue;
+      if (!v.tables) return v.name;
+      return b.table
+        ? `${v.name} ${v.tables[b.table - 1] ?? ''}`
+        : `${v.name}（${data.labels.wholeRoom}）`;
+    };
+
+    // 表格的每一行：一般場地一行；有討論桌的場地每張桌子一行
+    type Row = {
+      venue: string;
+      name: string;
+      table?: number;
+      tableName?: string;
+      groupSize?: number;
+    };
+    const rows: Row[] = data.venues.flatMap(v =>
+      v.tables
+        ? v.tables.map((t, i) => ({
+            venue: v.id,
+            name: v.name,
+            table: i + 1,
+            tableName: t,
+            groupSize: i === 0 ? v.tables!.length : 0,
+          }))
+        : [{ venue: v.id, name: v.name }]
+    );
+
+    const todayIso = iso(new Date());
+    let monday = mondayOf(new Date());
+
+    const render = () => {
+      const week = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        return d;
+      });
+      const isos = week.map(iso);
+      label.textContent = `${week[0].getFullYear()} 年 ${short(week[0])} – ${short(week[6])}`;
+      const inWeek = data.bookings
+        .filter(b => isos.includes(b.date))
+        .sort((a, b) => a.start.localeCompare(b.start));
+
+      // --- 電腦版表格 ---
+      head.replaceChildren();
+      const hr = el('tr');
+      const corner = el(
+        'th',
+        'w-44 border-b border-neutral-300/60 p-3 dark:border-neutral-700'
+      );
+      corner.setAttribute('colspan', '2');
+      hr.append(corner);
+      week.forEach((d, i) => {
+        const isToday = isos[i] === todayIso;
+        const th = el(
+          'th',
+          `border-b border-l border-neutral-300/60 p-3 text-center dark:border-neutral-700 ${isToday ? 'bg-yellow-400/20' : ''}`
+        );
+        th.append(
+          el(
+            'span',
+            'block font-bold text-neutral-800 dark:text-neutral-200',
+            data.labels.weekdays[i]
+          )
+        );
+        th.append(
+          el(
+            'span',
+            `block text-xs ${isToday ? 'font-bold text-orange-500' : 'text-neutral-500'}`,
+            isToday ? `${short(d)} ${data.labels.today}` : short(d)
+          )
+        );
+        hr.append(th);
+      });
+      head.append(hr);
+
+      body.replaceChildren();
+      rows.forEach(row => {
+        const tr = el('tr');
+        const thBase =
+          'border-t border-neutral-300/60 p-3 text-left align-top font-bold text-neutral-800 dark:border-neutral-700 dark:text-neutral-200';
+        if (row.table === undefined) {
+          const th = el('th', thBase, row.name);
+          th.setAttribute('colspan', '2');
+          tr.append(th);
+        } else {
+          if (row.groupSize) {
+            const th = el('th', `${thBase} w-20`, row.name);
+            th.setAttribute('rowspan', String(row.groupSize));
+            tr.append(th);
+          }
+          tr.append(
+            el(
+              'th',
+              'w-24 border-t border-l border-neutral-300/60 p-3 text-left align-top text-xs font-semibold text-orange-600 dark:border-neutral-700 dark:text-orange-300',
+              row.tableName
+            )
+          );
+        }
+        isos.forEach(dayIso => {
+          const isToday = dayIso === todayIso;
+          const td = el(
+            'td',
+            `${row.table === undefined ? 'h-24' : 'h-16'} border-t border-l border-neutral-300/60 p-1.5 align-top dark:border-neutral-700 ${isToday ? 'bg-yellow-400/10' : ''}`
+          );
+          // 這一格的借用：借整間的話，每張討論桌的那一行都會顯示
+          const list = inWeek.filter(
+            b =>
+              b.venue === row.venue &&
+              b.date === dayIso &&
+              (row.table === undefined ||
+                b.table === undefined ||
+                b.table === row.table)
+          );
+          if (list.length) {
+            const stack = el('div', 'space-y-1');
+            list.forEach(b =>
+              stack.append(
+                chip(
+                  b,
+                  '',
+                  row.table !== undefined && b.table === undefined
+                    ? data.labels.wholeRoom
+                    : ''
+                )
+              )
+            );
+            td.append(stack);
+          } else {
+            td.append(
+              el(
+                'span',
+                'block p-1 text-xs text-neutral-400 dark:text-neutral-500',
+                data.labels.free
+              )
+            );
+          }
+          tr.append(td);
+        });
+        body.append(tr);
+      });
+
+      // --- 手機版：每天一張卡片 ---
+      days.replaceChildren();
+      week.forEach((d, i) => {
+        const isToday = isos[i] === todayIso;
+        const card = el(
+          'div',
+          `rounded-2xl border p-4 ${isToday ? 'border-yellow-400 bg-yellow-400/10' : 'border-neutral-300/60 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900/60'}`
+        );
+        const title = el(
+          'p',
+          'font-bold text-neutral-800 dark:text-neutral-200',
+          `${data.labels.weekdays[i]} ${short(d)}`
+        );
+        if (isToday)
+          title.append(
+            el('span', 'ms-2 text-sm text-orange-500', data.labels.today)
+          );
+        card.append(title);
+        const list = inWeek.filter(b => b.date === isos[i]);
+        if (list.length) {
+          const stack = el('div', 'mt-3 space-y-2');
+          list.forEach(b => stack.append(chip(b, placeOf(b))));
+          card.append(stack);
+        } else {
+          card.append(
+            el('p', 'mt-1 text-sm text-neutral-500', data.labels.allFree)
+          );
+        }
+        days.append(card);
+      });
+    };
+
+    const shift = (weeks: number) => {
+      monday.setDate(monday.getDate() + weeks * 7);
+      render();
+    };
+    root
+      .querySelector('[data-week-prev]')!
+      .addEventListener('click', () => shift(-1));
+    root
+      .querySelector('[data-week-next]')!
+      .addEventListener('click', () => shift(1));
+    root.querySelector('[data-week-today]')!.addEventListener('click', () => {
+      monday = mondayOf(new Date());
+      render();
+    });
+    render();
+  }
+</script>

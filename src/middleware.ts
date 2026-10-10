@@ -8,7 +8,7 @@ import { getCopy } from '@/copy';
  * build time for prerendered pages as well as in dev.
  */
 export const onRequest = defineMiddleware((context, next) => {
-  const locale = resolveLocale(context.url.pathname, context.currentLocale);
+  const locale = resolveLocale(context.url.pathname);
   context.locals.locale = locale;
   context.locals.copy = getCopy(locale);
   return next();

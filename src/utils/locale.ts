@@ -1,34 +1,30 @@
 /**
- * Marketing-site locale module.
+ * Site locale module.
  *
- * Owns everything the marketing pages (`src/pages/` and `src/pages/fr/`)
- * need to know about locales: which ones exist, how to resolve the current
- * one from a request, how to localise a path, and how to find the same page
- * in another locale. Nothing else in the codebase should parse `/fr` out of
- * a pathname or hard-code a locale prefix.
- *
- * Docs (Starlight) have their own locale handling; this module is not used
- * there.
+ * The site is published in Traditional Chinese only, but every page still
+ * reads its locale and copy table through this module (via `Astro.locals`),
+ * so a second language can be added later without touching the views:
+ * extend `MARKETING_LOCALES` and `LOCALE_INFO`, add `src/copy/<locale>.ts`,
+ * and add `src/pages/<locale>/` route shells. Nothing else in the codebase
+ * should parse a locale prefix out of a pathname.
  *
  * Every function here is pure so it can be unit-tested without Astro.
  */
 
-export const MARKETING_LOCALES = ['en', 'fr'] as const;
+export const MARKETING_LOCALES = ['zh-tw'] as const;
 export type MarketingLocale = (typeof MARKETING_LOCALES)[number];
 
-export const DEFAULT_LOCALE: MarketingLocale = 'en';
+export const DEFAULT_LOCALE: MarketingLocale = 'zh-tw';
 
 /** Locales that carry a URL prefix (every locale except the default). */
 const PREFIXED_LOCALES: readonly MarketingLocale[] = MARKETING_LOCALES.filter(
   locale => locale !== DEFAULT_LOCALE
 );
 
-/** Per-locale constants: display label, language tags and Intl tag. */
+/** Per-locale constants: language tags and Intl tag. */
 export const LOCALE_INFO: Record<
   MarketingLocale,
   {
-    /** Human label for the language picker. */
-    label: string;
     /** `<html lang>` and `hreflang` value. */
     lang: string;
     /** `og:locale` value. */
@@ -39,19 +35,11 @@ export const LOCALE_INFO: Record<
     intl: string;
   }
 > = {
-  en: {
-    label: 'English',
-    lang: 'en',
-    ogLocale: 'en_US',
-    inLanguage: 'en-US',
-    intl: 'en-US',
-  },
-  fr: {
-    label: 'Français',
-    lang: 'fr',
-    ogLocale: 'fr_FR',
-    inLanguage: 'fr',
-    intl: 'fr-FR',
+  'zh-tw': {
+    lang: 'zh-TW',
+    ogLocale: 'zh_TW',
+    inLanguage: 'zh-TW',
+    intl: 'zh-TW',
   },
 };
 
@@ -63,18 +51,35 @@ export function isMarketingLocale(value: unknown): value is MarketingLocale {
 }
 
 /**
+ * The site's base path without a trailing slash: '' when the site is served
+ * from the domain root, '/repo' on a GitHub Pages project site. Comes from
+ * `base` in astro.config.mjs.
+ */
+const BASE = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
+
+/** Prefix a site-relative path with the base path: withBase('/x') -> '/repo/x'. */
+export function withBase(path = '/'): string {
+  const clean = path.startsWith('/') ? path : `/${path}`;
+  return `${BASE}${clean}`;
+}
+
+/** Remove the base path from a pathname: '/repo/x' -> '/x'. */
+function stripBase(pathname: string): string {
+  if (!BASE) return pathname;
+  if (pathname === BASE) return '/';
+  return pathname.startsWith(`${BASE}/`) ? pathname.slice(BASE.length) : pathname;
+}
+
+/**
  * Split a pathname into the locale it is prefixed with and the rest of the
- * path. The default locale has no prefix.
- *
- *   '/fr/blog/post-1/' -> { locale: 'fr', path: '/blog/post-1/' }
- *   '/fr'              -> { locale: 'fr', path: '/' }
- *   '/blog/'           -> { locale: 'en', path: '/blog/' }
+ * path. The default locale has no prefix. The base path is ignored.
  */
 export function splitLocale(pathname: string): {
   locale: MarketingLocale;
   path: string;
 } {
-  const normalized = pathname.startsWith('/') ? pathname : `/${pathname}`;
+  const stripped = stripBase(pathname);
+  const normalized = stripped.startsWith('/') ? stripped : `/${stripped}`;
   for (const locale of PREFIXED_LOCALES) {
     const prefix = `/${locale}`;
     if (normalized === prefix) return { locale, path: '/' };
@@ -85,41 +90,27 @@ export function splitLocale(pathname: string): {
   return { locale: DEFAULT_LOCALE, path: normalized };
 }
 
-/**
- * Resolve the locale of the current request. The pathname is authoritative
- * for marketing pages; `Astro.currentLocale` (driven by Starlight's i18n
- * config) is only a fallback.
- */
-export function resolveLocale(
-  pathname: string,
-  currentLocale?: string | undefined
-): MarketingLocale {
-  const { locale } = splitLocale(pathname);
-  if (locale !== DEFAULT_LOCALE) return locale;
-  if (isMarketingLocale(currentLocale)) return currentLocale;
-  return DEFAULT_LOCALE;
+/** Resolve the locale of the current request from its pathname. */
+export function resolveLocale(pathname: string): MarketingLocale {
+  return splitLocale(pathname).locale;
 }
 
 /**
- * Build a site-relative path for a locale.
+ * Build a site-relative path for a locale, including the base path.
+ * Fragments and absolute URLs pass through unchanged.
  *
- *   localePath('fr', '/products')  -> '/fr/products'
- *   localePath('en', '/products')  -> '/products'
- *   localePath('fr')               -> '/fr'
- *   localePath('fr', '#')          -> '#'   (fragments and absolute URLs pass through)
+ *   localePath('zh-tw', '/career') -> '/career'      (or '/repo/career')
+ *   localePath('zh-tw', '#faq')      -> '#faq'
  */
 export function localePath(locale: MarketingLocale, path = '/'): string {
   if (path.startsWith('#') || /^[a-z]+:/i.test(path)) return path;
   const clean = path.startsWith('/') ? path : `/${path}`;
-  if (locale === DEFAULT_LOCALE) return clean;
-  if (clean === '/') return `/${locale}`;
-  return `/${locale}${clean}`;
+  if (locale === DEFAULT_LOCALE) return withBase(clean);
+  if (clean === '/') return withBase(`/${locale}`);
+  return withBase(`/${locale}${clean}`);
 }
 
-/**
- * The same page in every marketing locale, for hreflang links and the
- * language picker. Works from any localised or unlocalised pathname.
- */
+/** The same page in every locale, for hreflang links. */
 export function alternatePaths(
   pathname: string
 ): Record<MarketingLocale, string> {

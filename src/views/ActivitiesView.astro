@@ -1,0 +1,145 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import MainLayout from '@/layouts/MainLayout.astro';
+import PageHero from '@components/sections/landing/PageHero.astro';
+import heroImage from '@images/heroes/activities.jpg';
+import Section from '@components/ui/blocks/Section.astro';
+import Icon from '@components/ui/icons/Icon.astro';
+import { activities } from '@data/activities';
+import { getCopy } from '@/copy';
+import type { MarketingLocale } from '@utils/locale';
+
+/**
+ * 活動成果：一年的活動依時間由上到下排列。
+ * 每個活動是一張佔滿整個寬度的卡片：一邊是大照片，另一邊是時間、名稱、簡介，
+ * 以及「活動網站」與「活動相簿」按鈕；照片左右交替擺放。手機版照片在上、文字在下。
+ * 活動清單在 `src/data_files/activities.ts`，照片放在 `src/images/activities/`；
+ * 連結還沒填的按鈕會顯示成灰色、不能點，照片還沒放的會顯示預留位置。
+ */
+interface Props {
+  locale: MarketingLocale;
+}
+
+const { locale } = Astro.props;
+const copy = getCopy(locale).activities;
+
+// 讀進 src/images/activities/ 裡所有照片，讓 activities.ts 只要寫檔名就好
+const photoFiles = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/images/activities/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true }
+);
+function photoOf(filename: string): ImageMetadata {
+  const photo = photoFiles[`/src/images/activities/${filename}`];
+  if (!photo) {
+    throw new Error(
+      `找不到活動照片 src/images/activities/${filename}，請確認檔名（含副檔名、大小寫）是否正確。`
+    );
+  }
+  return photo.default;
+}
+
+const buttonBase =
+  'inline-flex items-center gap-x-1.5 rounded-lg px-3 py-2 text-sm font-bold transition sm:px-4';
+const disabledButton =
+  'cursor-not-allowed bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500';
+---
+
+<MainLayout title={copy.title} description={copy.metaDescription}>
+  <PageHero
+    title={copy.title}
+    subTitle={copy.hero.subTitle}
+    image={heroImage}
+  />
+
+  <Section tone="muted">
+    <ol class="space-y-8 md:space-y-10">
+      {activities.map((activity, i) => {
+        // 照片左右交替：單數在左、雙數在右
+        const photoRight = i % 2 === 1;
+        const buttons = [
+          {
+            label: copy.websiteBtn,
+            url: activity.website,
+            style: 'bg-yellow-400 text-neutral-800 hover:bg-yellow-500',
+          },
+          {
+            label: copy.photosBtn,
+            url: activity.photos,
+            style:
+              'border border-neutral-300 bg-neutral-50 text-neutral-700 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700',
+          },
+        ];
+        return (
+          <li id={activity.id} class="scroll-mt-32">
+            <article
+              class:list={[
+                'flex flex-col overflow-hidden rounded-3xl border border-neutral-300/60 bg-neutral-50 shadow-sm dark:border-neutral-700 dark:bg-neutral-900/60',
+                photoRight ? 'md:flex-row-reverse' : 'md:flex-row',
+              ]}
+            >
+              {/* 照片 */}
+              <div class="relative aspect-video bg-neutral-200 md:aspect-auto md:min-h-80 md:w-1/2 dark:bg-neutral-800">
+                {activity.photo ? (
+                  <Image
+                    src={photoOf(activity.photo)}
+                    alt={activity.name}
+                    class="absolute inset-0 h-full w-full object-cover"
+                    width={1000}
+                    height={640}
+                  />
+                ) : (
+                  <div class="absolute inset-0 flex items-center justify-center text-neutral-400 dark:text-neutral-600">
+                    <Icon name="photo" class="h-14 w-14" />
+                  </div>
+                )}
+              </div>
+
+              {/* 文字 */}
+              <div class="flex flex-col justify-center p-6 md:w-1/2 md:p-10 lg:p-12">
+                <div class="flex items-center gap-x-3">
+                  <span class="text-4xl font-bold text-yellow-400/80 tabular-nums">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span class="rounded-full bg-orange-400/15 px-3 py-1 text-sm font-bold text-orange-500 dark:text-orange-300">
+                    {activity.time}
+                  </span>
+                </div>
+                <h2 class="mt-3 text-2xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200">
+                  {activity.name}
+                </h2>
+                <p class="mt-3 text-pretty text-neutral-600 md:text-lg dark:text-neutral-400">
+                  {activity.description}
+                </p>
+                <div class="mt-6 flex flex-wrap gap-2">
+                  {buttons.map(button =>
+                    button.url ? (
+                      <a
+                        href={button.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class:list={[buttonBase, button.style]}
+                      >
+                        {button.label}
+                        <Icon name="openInNew" class="h-4 w-4" />
+                      </a>
+                    ) : (
+                      <span
+                        class:list={[buttonBase, disabledButton]}
+                        aria-disabled="true"
+                        title={copy.comingSoon}
+                      >
+                        {button.label}
+                        <Icon name="openInNew" class="h-4 w-4" />
+                      </span>
+                    )
+                  )}
+                </div>
+              </div>
+            </article>
+          </li>
+        );
+      })}
+    </ol>
+  </Section>
+</MainLayout>

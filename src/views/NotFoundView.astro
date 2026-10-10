@@ -4,11 +4,7 @@ import PrimaryCTA from '@components/ui/buttons/PrimaryCTA.astro';
 import { getCopy } from '@/copy';
 import { localePath, type MarketingLocale } from '@utils/locale';
 
-/**
- * The 404 page in one locale. Static output can only serve one `404.html`
- * (the English one); `/fr/404/` is built as well so the host can rewrite
- * missing `/fr/…` paths to it (see `vercel.json` and the README).
- */
+/** 404 頁面 */
 interface Props {
   locale: MarketingLocale;
 }
@@ -26,7 +22,7 @@ const copy = getCopy(locale).notFound;
         </h1>
         <p
           id="subtitle"
-          class="mb-4 text-3xl font-bold tracking-tight text-balance text-neutral-700 md:text-4xl dark:text-neutral-300"
+          class="mb-4 text-2xl font-bold tracking-tight text-balance text-neutral-700 md:text-3xl dark:text-neutral-300"
         >
           {copy.subTitle}
         </p>

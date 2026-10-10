@@ -1,8 +1,8 @@
+# Pull request 的檢查：確認網站能正常建置、每個頁面都打得開。
+# （推送到 main / master 時的建置與部署在 deploy.yml）
 name: CI
 
 on:
-  push:
-    branches: [main, master]
   pull_request:
 
 permissions:
@@ -14,23 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 9
-
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Format check
-        run: pnpm format:check
+        run: npm ci
 
       - name: Typecheck and build
-        run: pnpm build
+        run: npm run build
 
       - name: Smoke tests
-        run: pnpm test:smoke
+        run: npm run test:smoke

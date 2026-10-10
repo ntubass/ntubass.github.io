@@ -67,7 +67,7 @@ import HeroSection from '@components/sections/landing/HeroSection.astro';
 
 ## Getting Started
 
-You need **Node.js 22** and **pnpm 9 or newer** (the versions CI uses).
+You need **Node.js 24** and npm (the versions CI uses).
 
 **1. Create your repo.** Click **Use this template** at the top of the [GitHub page](https://github.com/mearashadowfax/ScrewFast), or clone directly:
 
@@ -79,13 +79,13 @@ cd my-site
 **2. Install dependencies:**
 
 ```bash
-pnpm install
+npm install
 ```
 
 **3. Start the dev server:**
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 Open <http://localhost:4321>. Edits to any file reload the page.
@@ -93,10 +93,10 @@ Open <http://localhost:4321>. Edits to any file reload the page.
 **4. Build for production:**
 
 ```bash
-pnpm build
+npm run build
 ```
 
-This runs `astro check` (type-checking), builds the site into `dist/`, and minifies the HTML. Preview the result with `pnpm preview`, or run `pnpm test:smoke` to serve `dist/` and verify the key routes respond.
+This runs `astro check` (type-checking), builds the site into `dist/`, and minifies the HTML. Preview the result with `npm run preview`, or run `npm run test:smoke` to serve `dist/` and verify the key routes respond.
 
 > [!TIP]
 > Only need one language? The [`monolingual-site`](https://github.com/mearashadowfax/ScrewFast/tree/monolingual-site) branch has the French pages and i18n plumbing removed.
@@ -203,7 +203,7 @@ Entries hold geometry only; size and colour come from the `class` you pass (ever
 
 ## Deployment
 
-`pnpm build` produces a static site in `dist/` that any static host can serve.
+`npm run build` produces a static site in `dist/` that any static host can serve.
 
 - **Vercel:** [Deploy with Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmearashadowfax%2FScrewFast). The included [`vercel.json`](vercel.json) adds security headers and caching rules.
 - **Netlify:** [Deploy to Netlify](https://app.netlify.com/start/deploy?repository=https://github.com/mearashadowfax/ScrewFast).
@@ -303,7 +303,7 @@ The contact, newsletter and sign-in/up/recover forms are placeholders wrapped in
 
 ### HTML minification
 
-`pnpm build` finishes by running [`process-html.mjs`](process-html.mjs), which minifies every HTML file in the build output with `html-minifier-terser`.
+`npm run build` finishes by running [`process-html.mjs`](process-html.mjs), which minifies every HTML file in the build output with `html-minifier-terser`.
 
 ### Security headers
 
@@ -311,14 +311,14 @@ The contact, newsletter and sign-in/up/recover forms are placeholders wrapped in
 
 ### Formatting
 
-Prettier with `prettier-plugin-astro` and `prettier-plugin-tailwindcss` (class sorting) is configured in [`.prettierrc`](.prettierrc). Run `pnpm format:fix` locally; CI runs `pnpm format:check`.
+Prettier with `prettier-plugin-astro` and `prettier-plugin-tailwindcss` (class sorting) is configured in [`.prettierrc`](.prettierrc). Run `npm run format:fix` locally; CI runs the build and smoke tests.
 
 ---
 
 ## Contributing
 
 - **Bugs and ideas:** open an [issue](https://github.com/mearashadowfax/ScrewFast/issues) or start a [discussion](https://github.com/mearashadowfax/ScrewFast/discussions/new/choose).
-- **Pull requests:** welcome. Run `pnpm format:fix` and `pnpm build` before submitting.
+- **Pull requests:** welcome. Run `npm run format:fix` and `npm run build` before submitting.
 
 See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 

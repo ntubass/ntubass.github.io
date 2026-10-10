@@ -1,5 +1,7 @@
 import type { APIRoute, ImageMetadata } from 'astro';
 import { getImage } from 'astro:assets';
+import { SITE } from '@data/constants';
+import { withBase } from '@utils/locale';
 import icon from '@images/icon.png';
 import maskableIcon from '@images/icon-maskable.png';
 
@@ -44,12 +46,12 @@ export const GET: APIRoute = async () => {
   );
 
   const manifest = {
-    short_name: 'ScrewFast',
-    name: 'ScrewFast',
+    short_name: SITE.title,
+    name: SITE.title,
     icons,
     display: 'minimal-ui',
-    id: '/',
-    start_url: '/',
+    id: withBase('/'),
+    start_url: withBase('/'),
     theme_color: '#FFEDD5',
     background_color: '#262626',
   };

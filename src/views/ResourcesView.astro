@@ -1,0 +1,195 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import PageHero from '@components/sections/landing/PageHero.astro';
+import heroImage from '@images/heroes/resources.jpg';
+import Section from '@components/ui/blocks/Section.astro';
+import Icon from '@components/ui/icons/Icon.astro';
+import LinkPanel from '@components/ui/blocks/LinkPanel.astro';
+import SubNav from '@components/ui/navigation/SubNav.astro';
+import { getCopy } from '@/copy';
+import { entriesFor, pathFor } from '@utils/content';
+import type { MarketingLocale } from '@utils/locale';
+
+/**
+ * 學習資源：上方是領域分頁（管顧、金融、FMCG、科技、新創），一次只顯示一個領域；
+ * 考古題獨立一塊，放在分頁內容下方。
+ * - 領域名稱與說明在 `copy.resources.sections`
+ * - 每張資源卡片是 `src/content/resources/zh-tw/` 裡的一個 Markdown 檔
+ *   （有 `url` 連到外部；沒有 `url` 但有內文就連到網站內的文章頁；都沒有顯示「即將推出」）
+ * - 考古題的文字與連結在 `copy.resources.exams`
+ * 網址加上 #id（例如 /resources#finance）可以直接打開指定的分頁。
+ */
+interface Props {
+  locale: MarketingLocale;
+}
+
+const { locale } = Astro.props;
+const copy = getCopy(locale).resources;
+
+const tabs = copy.sections.map(section => ({
+  id: section.id,
+  label: section.title,
+}));
+const firstId = tabs[0].id;
+
+// 每張卡片：連到外部、連到網站內文章，或還沒有內容
+const resources = await entriesFor('resources', locale);
+const cardsFor = (field: string) =>
+  resources
+    .filter(entry => entry.data.field === field)
+    .map(entry => ({
+      ...entry.data,
+      href: entry.data.url ?? (entry.body?.trim() ? pathFor(entry) : ''),
+      external: Boolean(entry.data.url),
+    }));
+---
+
+<MainLayout title={copy.title} description={copy.metaDescription}>
+  <PageHero
+    title={copy.title}
+    subTitle={copy.hero.subTitle}
+    image={heroImage}
+  />
+
+  {/* 領域分頁：疊在橫幅下緣，往下捲時會停在導覽列下方 */}
+  <SubNav role="tablist" aria-label={copy.title} data-resource-tabs>
+    {tabs.map(tab => (
+      <button
+        type="button"
+        role="tab"
+        id={`tab-${tab.id}`}
+        aria-controls={tab.id}
+        aria-selected={tab.id === firstId ? 'true' : 'false'}
+        tabindex={tab.id === firstId ? 0 : -1}
+        data-tab={tab.id}
+        class="subnav-item"
+      >
+        {tab.label}
+      </button>
+    ))}
+  </SubNav>
+
+  <Section tone="muted">
+    {copy.sections.map(section => (
+      <div
+        id={section.id}
+        role="tabpanel"
+        aria-labelledby={`tab-${section.id}`}
+        data-tab-panel
+        class="scroll-mt-44"
+        hidden={section.id !== firstId}
+      >
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200">
+            {section.title}
+          </h2>
+          <p class="mt-2 text-lg text-pretty text-neutral-600 dark:text-neutral-400">
+            {section.subTitle}
+          </p>
+        </div>
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {cardsFor(section.id).map(item => (
+            <article class="flex flex-col rounded-2xl border border-neutral-300/60 bg-neutral-50 p-6 dark:border-neutral-700 dark:bg-neutral-900/50">
+              <span class="self-start rounded-full bg-yellow-400/25 px-2.5 py-1 text-xs font-semibold text-yellow-800 dark:text-yellow-300">
+                {item.tag}
+              </span>
+              <h3 class="mt-3 text-lg font-bold text-neutral-800 dark:text-neutral-200">
+                {item.title}
+              </h3>
+              <p class="mt-2 grow text-sm text-pretty text-neutral-600 dark:text-neutral-400">
+                {item.description}
+              </p>
+              {item.href ? (
+                <a
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
+                  class="mt-4 inline-flex items-center gap-x-1.5 text-sm font-semibold text-orange-400 hover:text-orange-500 dark:text-orange-300"
+                >
+                  {item.external ? copy.linkLabel : copy.articleLabel}
+                  <Icon
+                    name={item.external ? 'openInNew' : 'arrowRight'}
+                    class="h-4 w-4"
+                  />
+                </a>
+              ) : (
+                <span class="mt-4 text-sm text-neutral-400 dark:text-neutral-500">
+                  {copy.comingSoon}
+                </span>
+              )}
+            </article>
+          ))}
+        </div>
+      </div>
+    ))}
+  </Section>
+
+  {/* 考古題：獨立一塊，不屬於任何領域分頁（網址在 copy.resources.exams.url） */}
+  <Section id={copy.exams.id}>
+    <LinkPanel {...copy.exams} />
+  </Section>
+
+  {/* 沒有 JavaScript 時，全部內容照常顯示 */}
+  <noscript>
+    <style>
+      [data-tab-panel] {
+        display: block !important;
+        margin-bottom: 4rem;
+      }
+    </style>
+  </noscript>
+</MainLayout>
+
+<script>
+  const tablist = document.querySelector<HTMLElement>('[data-resource-tabs]');
+  if (tablist) {
+    const tabs = [
+      ...tablist.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+    ];
+    const panels = [
+      ...document.querySelectorAll<HTMLElement>('[data-tab-panel]'),
+    ];
+
+    const select = (id: string, { focus = false, updateHash = true } = {}) => {
+      if (!tabs.some(tab => tab.dataset.tab === id)) return;
+      tabs.forEach(tab => {
+        const active = tab.dataset.tab === id;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        if (active && focus) tab.focus();
+      });
+      panels.forEach(panel => (panel.hidden = panel.id !== id));
+      if (updateHash) history.replaceState(null, '', `#${id}`);
+    };
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => {
+        const id = tab.dataset.tab!;
+        select(id);
+        const panel = document.getElementById(id);
+        if (panel && panel.getBoundingClientRect().top < 0) {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+      // 左右方向鍵切換分頁
+      tab.addEventListener('keydown', event => {
+        const step =
+          event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+        if (!step) return;
+        event.preventDefault();
+        const next = tabs[(i + step + tabs.length) % tabs.length];
+        select(next.dataset.tab!, { focus: true });
+      });
+    });
+
+    // 網址有 #finance 之類的話，直接打開那個分頁。
+    // 也處理在同一頁改變 #（例如按上一頁）的情況。
+    const openFromHash = () => {
+      const id = decodeURIComponent(location.hash.slice(1));
+      if (!id || !tabs.some(tab => tab.dataset.tab === id)) return;
+      select(id, { updateHash: false });
+    };
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);
+  }
+</script>

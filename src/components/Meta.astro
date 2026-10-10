@@ -4,6 +4,7 @@ import { OG, SITE } from '@data/constants';
 import faviconSvgSrc from '@images/icon.svg';
 import faviconSrc from '@images/icon.png';
 import type { PageMetadata } from '@utils/metadata';
+import { withBase } from '@utils/locale';
 
 /**
  * Emits the `<head>` tags for a page. All page-specific values come from
@@ -64,7 +65,7 @@ const appleTouchIcon = await getImage({
 <meta name="twitter:card" content="summary_large_image" />
 <meta
   property="twitter:domain"
-  content={Astro.site?.hostname ?? 'screwfast.uk'}
+  content={new URL(SITE.url).hostname}
 />
 <meta property="twitter:url" content={metadata.canonical} />
 <meta name="twitter:title" content={metadata.ogTitle} />
@@ -72,9 +73,14 @@ const appleTouchIcon = await getImage({
 <meta name="twitter:image" content={socialImage} />
 
 {/* Site-wide head chrome: manifest, sitemap, favicons, theme colour */}
-<link rel="manifest" href="/manifest.json" />
-<link rel="sitemap" href="/sitemap-index.xml" />
-<link href="/favicon.ico" rel="icon" sizes="any" type="image/x-icon" />
+<link rel="manifest" href={withBase('/manifest.json')} />
+<link rel="sitemap" href={withBase('/sitemap-index.xml')} />
+<link
+  href={withBase('/favicon.ico')}
+  rel="icon"
+  sizes="any"
+  type="image/x-icon"
+/>
 <link href={faviconSvg.src} rel="icon" type="image/svg+xml" sizes="any" />
 <meta name="mobile-web-app-capable" content="yes" />
 <link href={appleTouchIcon.src} rel="apple-touch-icon" />

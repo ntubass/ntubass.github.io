@@ -1,0 +1,68 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import MainLayout from '@/layouts/MainLayout.astro';
+import ArrowLink from '@components/ui/links/ArrowLink.astro';
+import { getCopy } from '@/copy';
+import { localeOf } from '@utils/content';
+import { localePath } from '@utils/locale';
+import { formatDate } from '@utils/utils';
+
+/**
+ * 單篇學習資源文章（/resources/xxx/）。內容來自 `src/content/resources/` 的 Markdown，
+ * 只有沒填 `url`、但有寫內文的資源才會有這一頁。
+ */
+interface Props {
+  resource: CollectionEntry<'resources'>;
+}
+
+const { resource } = Astro.props;
+const locale = localeOf(resource);
+const t = getCopy(locale).resources;
+const { title, description, tag, field, date } = resource.data;
+const fieldTitle = t.sections.find(section => section.id === field)?.title;
+const { Content } = await render(resource);
+---
+
+<MainLayout
+  title={title}
+  description={description}
+  section={t.article.ogSection}
+  kind={{ type: 'Article', image: '' }}
+>
+  <article class="mx-auto max-w-3xl px-4 pt-16 pb-16 sm:px-6 lg:pt-24">
+    <ArrowLink
+      url={localePath(locale, `/resources#${field}`)}
+      title={t.article.back}
+      back
+    />
+
+    <div class="mt-6 flex flex-wrap items-center gap-2 text-sm font-semibold">
+      {fieldTitle && (
+        <span class="rounded-full bg-neutral-300/60 px-3 py-1 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">
+          {fieldTitle}
+        </span>
+      )}
+      <span class="rounded-full bg-yellow-400/25 px-3 py-1 text-yellow-800 dark:text-yellow-300">
+        {tag}
+      </span>
+      {date && (
+        <time
+          datetime={date.toISOString()}
+          class="ms-1 text-orange-400 dark:text-orange-300"
+        >
+          {formatDate(date, locale)}
+        </time>
+      )}
+    </div>
+    <h1 class="mt-4 text-2xl font-bold tracking-tight text-neutral-800 md:text-4xl dark:text-neutral-200">
+      {title}
+    </h1>
+    <p class="mt-4 text-lg text-pretty text-neutral-600 dark:text-neutral-400">
+      {description}
+    </p>
+
+    <div class="prose prose-neutral mt-10 max-w-none md:prose-lg dark:prose-invert prose-headings:text-neutral-800 dark:prose-headings:text-neutral-200 prose-th:text-left">
+      <Content />
+    </div>
+  </article>
+</MainLayout>

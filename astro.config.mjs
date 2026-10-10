@@ -1,140 +1,30 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
-import starlight from '@astrojs/starlight';
 
 import mdx from '@astrojs/mdx';
 
+// 子路徑（例如 GitHub Pages 的 /repo名稱），沒有子路徑時是空字串
+const BASE = (process.env.BASE_PATH || '').replace(/\/$/, '');
+
 // https://astro.build/config
 export default defineConfig({
+  // 網站網址與子路徑。部署到 GitHub Pages 時，由 .github/workflows/deploy.yml 自動帶入
+  // （例如 https://帳號.github.io 與 /repo名稱）；在自己電腦上開發時用預設值。
+  site: process.env.SITE_URL || 'https://example.com',
+  base: process.env.BASE_PATH || '/',
   // https://docs.astro.build/en/guides/images/#authorizing-remote-images
-  site: 'https://screwfast.uk',
   image: {
     domains: ['images.unsplash.com'],
   },
-  // i18n: {
-  //   defaultLocale: "en",
-  //   locales: ["en", "fr"],
-  //   fallback: {
-  //     fr: "en",
-  //   },
-  //   routing: {
-  //     prefixDefaultLocale: false,
-  //   },
-  // },
+  // 沒有獨立頁面的網址，轉到對應的區塊（目的地要加上子路徑）
+  redirects: {
+    '/interviews': `${BASE}/career#interviews`,
+    // 招募資訊已移到「關於我們」最下面
+    '/recruit': `${BASE}/about-us#recruit`,
+  },
   prefetch: true,
-  integrations: [
-    sitemap({
-      i18n: {
-        defaultLocale: 'en', // All urls that don't contain language prefix will be treated as default locale
-        locales: {
-          en: 'en', // The `defaultLocale` value must present in `locales` keys
-          fr: 'fr',
-        },
-      },
-    }),
-    starlight({
-      title: 'ScrewFast Docs',
-      // https://github.com/withastro/starlight/blob/main/packages/starlight/CHANGELOG.md
-      // If no Astro and Starlight i18n configurations are provided, the built-in default locale is used in Starlight and a matching Astro i18n configuration is generated/used.
-      // If only a Starlight i18n configuration is provided, an equivalent Astro i18n configuration is generated/used.
-      // If only an Astro i18n configuration is provided, the Starlight i18n configuration is updated to match it.
-      // If both an Astro and Starlight i18n configurations are provided, an error is thrown.
-      locales: {
-        root: {
-          label: 'English',
-          lang: 'en',
-        },
-        de: { label: 'Deutsch', lang: 'de' },
-        es: { label: 'Español', lang: 'es' },
-        fa: { label: 'Persian', lang: 'fa', dir: 'rtl' },
-        fr: { label: 'Français', lang: 'fr' },
-        ja: { label: '日本語', lang: 'ja' },
-        'zh-cn': { label: '简体中文', lang: 'zh-CN' },
-      },
-      // https://starlight.astro.build/guides/sidebar/
-      sidebar: [
-        {
-          label: 'Quick Start Guides',
-          translations: {
-            de: 'Schnellstartanleitungen',
-            es: 'Guías de Inicio Rápido',
-            fa: 'راهنمای شروع سریع',
-            fr: 'Guides de Démarrage Rapide',
-            ja: 'クイックスタートガイド',
-            'zh-cn': '快速入门指南',
-          },
-          items: [{ autogenerate: { directory: 'guides' } }],
-        },
-        {
-          label: 'Tools & Equipment',
-          // Translated guide intros exist per locale; these pages fall back to English.
-          translations: {
-            de: 'Werkzeuge & Ausrüstung',
-            es: 'Herramientas y Equipo',
-            fa: 'ابزار و تجهیزات',
-            fr: 'Outils et Équipement',
-            ja: 'ツールと機材',
-            'zh-cn': '工具与设备',
-          },
-          items: [
-            { label: 'Tool Guides', link: 'tools/tool-guides/' },
-            { label: 'Equipment Care', link: 'tools/equipment-care/' },
-          ],
-        },
-        {
-          label: 'Construction Services',
-          translations: {
-            de: 'Baudienstleistungen',
-            es: 'Servicios de Construcción',
-            fa: 'خدمات ساخت‌وساز',
-            fr: 'Services de Construction',
-            ja: '建設サービス',
-            'zh-cn': '施工服务',
-          },
-          items: [{ autogenerate: { directory: 'construction' } }],
-        },
-        {
-          label: 'Advanced Topics',
-          items: [{ autogenerate: { directory: 'advanced' } }],
-        },
-      ],
-      social: [
-        {
-          icon: 'github',
-          label: 'GitHub',
-          href: 'https://github.com/mearashadowfax/ScrewFast',
-        },
-      ],
-      disable404Route: true,
-      customCss: ['./src/assets/styles/starlight.css'],
-      favicon: '/favicon.ico',
-      components: {
-        SiteTitle: './src/components/ui/starlight/SiteTitle.astro',
-        Head: './src/components/ui/starlight/Head.astro',
-        MobileMenuFooter:
-          './src/components/ui/starlight/MobileMenuFooter.astro',
-        ThemeSelect: './src/components/ui/starlight/ThemeSelect.astro',
-      },
-      head: [
-        {
-          tag: 'meta',
-          attrs: {
-            property: 'og:image',
-            content: 'https://screwfast.uk' + '/social.webp',
-          },
-        },
-        {
-          tag: 'meta',
-          attrs: {
-            property: 'twitter:image',
-            content: 'https://screwfast.uk' + '/social.webp',
-          },
-        },
-      ],
-    }),
-    mdx(),
-  ],
+  integrations: [sitemap(), mdx()],
   experimental: {
     clientPrerender: true,
   },

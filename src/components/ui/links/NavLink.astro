@@ -1,23 +1,26 @@
 ---
-// Destructure the properties from Astro.props
-const { url, name } = Astro.props;
-
-// Define TypeScript interface for the properties
+/**
+ * Navigation-bar link. Highlights itself when the current page is the link's
+ * page or one of its sub-pages (e.g. `/activities/2026-03-career-talk/` lights
+ * up `/activities`). The home link only lights up on the home page itself.
+ */
 interface Props {
   url: string;
   name: string;
+  /** Other path prefixes that also count as this link's section. */
+  alsoActiveOn?: string[];
+  /** The home link only lights up on the home page itself. */
+  home?: boolean;
 }
+
+const { url, name, alsoActiveOn = [], home = false } = Astro.props;
 ---
 
-{/*
-Re-usable link component for navigation bar. Highlights the active link
-by comparing the current URL with the href of each link.
-We assign an ID matching the URL for easy reference in our script.
-If URL is '/' (home page), assign ID as 'home' 
-*/}
 <a
-  id={url === '/' ? 'home' : url.replace('/', '')}
   href={url}
+  data-nav-link={url}
+  data-nav-also={alsoActiveOn.join(',')}
+  data-nav-home={home ? 'true' : undefined}
   data-astro-prefetch
   class="rounded-lg text-base font-medium text-neutral-600 ring-zinc-500 outline-hidden hover:text-neutral-500 focus-visible:ring-3 md:py-3 md:text-sm 2xl:text-base dark:text-neutral-400 dark:ring-zinc-200 dark:hover:text-neutral-500 dark:focus:outline-hidden"
 >
@@ -25,27 +28,33 @@ If URL is '/' (home page), assign ID as 'home'
 </a>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    let url = window.location.pathname;
-    let navId;
-
-    if (url === '/') {
-      navId = 'home';
-    } else {
-      navId = url.replace('/', '');
-    }
-
-    let nav = document.getElementById(navId);
-
-    if (nav) {
-      nav.classList.remove(
+  const highlight = () => {
+    const norm = (path: string) => path.replace(/\/$/, '') || '/';
+    const current = norm(window.location.pathname);
+    document.querySelectorAll<HTMLElement>('[data-nav-link]').forEach(link => {
+      const target = norm(link.dataset.navLink ?? '');
+      const under = (path: string) =>
+        current === path || current.startsWith(`${path}/`);
+      const also = (link.dataset.navAlso ?? '')
+        .split(',')
+        .filter(Boolean)
+        .map(norm);
+      const active =
+        link.dataset.navHome === 'true'
+          ? current === target
+          : under(target) || also.some(under);
+      if (!active) return;
+      link.classList.remove(
         'text-neutral-600',
         'dark:text-neutral-400',
         'hover:text-neutral-500',
         'dark:hover:text-neutral-500'
       );
-      nav.classList.add('text-orange-400', 'dark:text-orange-300');
-      nav.setAttribute('aria-current', 'page');
-    }
-  });
+      link.classList.add('text-orange-400', 'dark:text-orange-300');
+      link.setAttribute('aria-current', 'page');
+    });
+  };
+  if (document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', highlight);
+  else highlight();
 </script>

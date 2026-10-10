@@ -1,0 +1,79 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import PageHero from '@components/sections/landing/PageHero.astro';
+import heroImage from '@images/heroes/about.jpg';
+import Section from '@components/ui/blocks/Section.astro';
+import SectionHeader from '@components/ui/blocks/SectionHeader.astro';
+import Timeline from '@components/ui/blocks/Timeline.astro';
+import TeamGrid from '@components/sections/about/TeamGrid.astro';
+import RecruitSection from '@components/sections/about/RecruitSection.astro';
+import Icon from '@components/ui/icons/Icon.astro';
+import { SITE } from '@data/constants';
+import { getCopy } from '@/copy';
+import type { MarketingLocale } from '@utils/locale';
+
+/**
+ * 關於我們：我們是誰 & 系學會的一年 → 現任幹部 → 聯絡我們 → 加入系學會（#recruit）。
+ * 招募資訊的內容在 `RecruitSection`。
+ */
+interface Props {
+  locale: MarketingLocale;
+}
+
+const { locale } = Astro.props;
+const copy = getCopy(locale).about;
+const history = copy.history.items.map(item => ({
+  date: item.year,
+  description: item.text,
+}));
+---
+
+<MainLayout title={copy.title} description={copy.metaDescription}>
+  <PageHero
+    title={copy.title}
+    subTitle={copy.hero.subTitle}
+    image={heroImage}
+  />
+
+  <Section tone="muted">
+    <div class="grid gap-12 lg:grid-cols-5">
+      <div class="lg:col-span-3">
+        <SectionHeader title={copy.story.title} />
+        <div class="space-y-4 text-lg leading-relaxed text-pretty text-neutral-700 dark:text-neutral-300">
+          {copy.story.paragraphs.map(paragraph => <p>{paragraph}</p>)}
+        </div>
+      </div>
+      <div class="lg:col-span-2">
+        <SectionHeader title={copy.history.title} />
+        <Timeline steps={history} />
+      </div>
+    </div>
+  </Section>
+
+  <Section id="team">
+    <SectionHeader title={copy.team.title} subTitle={copy.team.subTitle} />
+    <TeamGrid />
+  </Section>
+
+  <Section tone="muted" id="contact">
+    <div class="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h2 class="text-2xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200">
+          {copy.contact.title}
+        </h2>
+        <p class="mt-2 text-lg text-neutral-600 dark:text-neutral-400">
+          {copy.contact.description}
+        </p>
+      </div>
+      <a
+        href={`mailto:${SITE.email}`}
+        class="inline-flex items-center gap-x-2 rounded-lg bg-yellow-400 px-5 py-3 font-bold text-neutral-800 transition hover:bg-yellow-500"
+      >
+        <Icon name="envelopeOpen" class="h-5 w-5" />
+        {SITE.email}
+      </a>
+    </div>
+  </Section>
+
+  <RecruitSection />
+</MainLayout>

@@ -1,0 +1,168 @@
+---
+import Section from '@components/ui/blocks/Section.astro';
+import Icon from '@components/ui/icons/Icon.astro';
+import { RECRUIT } from '@data/recruit';
+
+/**
+ * 招募資訊（放在「關於我們」頁最後，錨點 #recruit），整理成一張卡片：
+ * 上方黃色區塊：標題、簡介、為什麼加入、招募狀態與報名按鈕
+ * 中間三欄：招募資格（含我們在找這樣的你）、招募時程、甄選流程
+ * 下方：常見問題（點問題展開答案）
+ * 文字在 `copy.recruit` 與 `copy.faq`；報名開關與表單網址在 `src/data_files/recruit.ts`。
+ */
+const { copy: t } = Astro.locals;
+const copy = t.recruit;
+
+const columnTitle =
+  'mb-4 text-sm font-bold tracking-wide text-orange-500 dark:text-orange-300';
+---
+
+<Section id="recruit">
+  <div class="overflow-hidden rounded-3xl border border-neutral-300/60 bg-neutral-50 shadow-sm dark:border-neutral-700 dark:bg-neutral-900/60">
+    {/* 上方：標題、簡介、為什麼加入、報名 */}
+    <div class="bg-yellow-400 p-8 md:p-10">
+      <div class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+        <div class="max-w-2xl">
+          {RECRUIT.isOpen && (
+            <span class="mb-3 inline-flex items-center gap-x-2 rounded-full bg-neutral-800/10 px-3 py-1 text-sm font-semibold text-neutral-800">
+              <span class="h-2 w-2 animate-pulse rounded-full bg-orange-500" />
+              {copy.hero.openBadge}
+            </span>
+          )}
+          <h2 class="text-2xl font-bold text-neutral-800 md:text-3xl">
+            {copy.title}
+          </h2>
+          <p class="mt-2 text-lg text-pretty text-neutral-800/80">
+            {copy.hero.subTitle}
+          </p>
+        </div>
+        <div class="shrink-0">
+          {RECRUIT.isOpen ? (
+            <a
+              href={RECRUIT.formUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group inline-flex items-center gap-x-2 rounded-xl bg-neutral-800 px-6 py-4 text-lg font-bold text-neutral-50 transition hover:bg-neutral-700"
+            >
+              {copy.hero.applyBtn}
+              <Icon
+                name="arrowRight"
+                class="h-5 w-5 transition group-hover:translate-x-1"
+              />
+            </a>
+          ) : (
+            <p class="max-w-xs rounded-xl bg-neutral-800/10 px-4 py-3 text-neutral-800">
+              {copy.hero.closedBadge}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* 為什麼加入我們：只放圖示與標題，保持精簡 */}
+      <ul class="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label={copy.why.title}>
+        {copy.why.items.map(item => (
+          <li
+            class="flex items-center gap-x-3 rounded-xl bg-neutral-50/70 px-3 py-3 text-sm font-semibold text-neutral-800 sm:px-4 sm:text-base"
+            title={item.description}
+          >
+            <Icon name={item.icon} class="hidden h-5 w-5 shrink-0 sm:block" />
+            {item.title}
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    {/* 中間三欄：資格、時程、流程 */}
+    <div class="grid gap-10 p-8 md:p-10 lg:grid-cols-3">
+      <div>
+        <h3 class={columnTitle}>{copy.criteria.title}</h3>
+        <dl class="space-y-4">
+          {copy.criteria.items.map(item => (
+            <div>
+              <dt class="font-bold text-neutral-800 dark:text-neutral-200">
+                {item.label}
+              </dt>
+              <dd class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-400">
+                {item.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <p class="mt-6 text-sm font-bold text-neutral-800 dark:text-neutral-200">
+          {copy.qualities.title}
+        </p>
+        <ul class="mt-2 flex flex-wrap gap-2">
+          {copy.qualities.items.map(item => (
+            <li class="rounded-full bg-yellow-400/25 px-3 py-1 text-sm text-neutral-800 dark:text-neutral-200">
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h3 class={columnTitle}>{copy.timeline.title}</h3>
+        <ol class="space-y-3">
+          {copy.timeline.steps.map(step => (
+            <li class="flex gap-x-4">
+              <span class="w-20 shrink-0 text-sm font-bold text-orange-500 dark:text-orange-300">
+                {step.date}
+              </span>
+              <span class="text-sm text-neutral-800 dark:text-neutral-200">
+                <span class="font-bold">{step.title}</span>
+                <span class="block text-neutral-500 dark:text-neutral-400">
+                  {step.description}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+        <p class="mt-4 text-xs text-neutral-500 dark:text-neutral-400">
+          {copy.timeline.subTitle}
+        </p>
+      </div>
+
+      <div>
+        <h3 class={columnTitle}>{copy.process.title}</h3>
+        <ol class="space-y-4">
+          {copy.process.steps.map((step, i) => (
+            <li class="flex gap-x-3">
+              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-sm font-bold text-neutral-800">
+                {i + 1}
+              </span>
+              <div>
+                <p class="font-bold text-neutral-800 dark:text-neutral-200">
+                  {step.title}
+                </p>
+                <p class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-400">
+                  {step.description}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+
+    {/* 常見問題：點問題展開答案 */}
+    <div class="border-t border-neutral-300/60 p-8 md:p-10 dark:border-neutral-700">
+      <h3 class={columnTitle}>{copy.faqTitle}</h3>
+      <div class="grid gap-x-10 gap-y-3 md:grid-cols-2">
+        {t.faq.faqs.map(faq => (
+          <details class="group rounded-xl bg-neutral-100 px-4 py-3 dark:bg-neutral-800">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-x-3 font-semibold text-neutral-800 dark:text-neutral-200 [&::-webkit-details-marker]:hidden">
+              {faq.question}
+              <Icon
+                name="chevronDown"
+                class="h-4 w-4 shrink-0 text-neutral-500 transition group-open:rotate-180"
+              />
+            </summary>
+            <p class="mt-2 text-sm text-pretty text-neutral-600 dark:text-neutral-400">
+              {faq.answer}
+            </p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </div>
+</Section>

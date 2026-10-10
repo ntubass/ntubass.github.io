@@ -1,0 +1,32 @@
+---
+import Icon from '@components/ui/icons/Icon.astro';
+
+/** Text link with a trailing arrow, e.g. "查看更多 →". */
+interface Props {
+  url: string;
+  title: string;
+  /** Points the arrow left, for "back to …" links. */
+  back?: boolean;
+}
+
+const { url, title, back = false } = Astro.props;
+---
+
+<a
+  href={url}
+  class="group inline-flex items-center gap-x-1.5 rounded-lg font-semibold text-orange-400 ring-zinc-500 outline-hidden transition duration-300 hover:text-orange-500 focus-visible:ring-3 dark:text-orange-300 dark:ring-zinc-200 dark:hover:text-orange-400"
+>
+  {back && (
+    <Icon
+      name="arrowRight"
+      class="h-4 w-4 shrink-0 rotate-180 transition duration-300 group-hover:-translate-x-1"
+    />
+  )}
+  {title}
+  {!back && (
+    <Icon
+      name="arrowRight"
+      class="h-4 w-4 shrink-0 transition duration-300 group-hover:translate-x-1"
+    />
+  )}
+</a>

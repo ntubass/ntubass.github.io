@@ -1,0 +1,50 @@
+---
+import Icon from '@components/ui/icons/Icon.astro';
+import type { IconName } from '@components/ui/icons/icons';
+
+/**
+ * Grid of icon + title + text cards (核心價值, 為什麼加入我們, 課程特色).
+ */
+interface Item {
+  icon?: IconName;
+  title: string;
+  description: string;
+}
+
+interface Props {
+  items: Item[];
+  columns?: 2 | 3 | 4;
+  /** Centre the icon and text inside each card. */
+  align?: 'start' | 'center';
+}
+
+const { items, columns = 3, align = 'start' } = Astro.props;
+const columnClass = {
+  2: 'md:grid-cols-2',
+  3: 'md:grid-cols-3',
+  4: 'sm:grid-cols-2 lg:grid-cols-4',
+}[columns];
+---
+
+<div class:list={['grid gap-6', columnClass]}>
+  {items.map(item => (
+    <div
+      class:list={[
+        'rounded-2xl border border-neutral-300/60 bg-neutral-50 p-6 dark:border-neutral-700 dark:bg-neutral-900/50',
+        align === 'center' && 'text-center',
+      ]}
+    >
+      {item.icon && (
+        <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-400/20 text-yellow-600 dark:text-yellow-400">
+          <Icon name={item.icon} class="h-6 w-6" />
+        </span>
+      )}
+      <h3 class="mt-4 text-lg font-bold text-neutral-800 dark:text-neutral-200">
+        {item.title}
+      </h3>
+      <p class="mt-2 text-pretty text-neutral-600 dark:text-neutral-400">
+        {item.description}
+      </p>
+    </div>
+  ))}
+</div>

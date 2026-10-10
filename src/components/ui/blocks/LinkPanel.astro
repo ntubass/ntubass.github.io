@@ -1,0 +1,55 @@
+---
+import Icon from '@components/ui/icons/Icon.astro';
+
+/**
+ * Highlighted yellow panel that sends people to an outside page (Notion,
+ * Google Drive, …): title, intro, a "what you'll find" checklist and a big
+ * button that opens `url` in a new tab. With an empty `url` the button is
+ * replaced by a disabled "coming soon" label. Used for 實習申請經驗 and 考古題.
+ */
+interface Props {
+  title: string;
+  subTitle: string;
+  highlights: string[];
+  btn: string;
+  url: string;
+  comingSoon: string;
+}
+
+const { title, subTitle, highlights, btn, url, comingSoon } = Astro.props;
+---
+
+<div class="grid gap-8 rounded-3xl bg-yellow-400 p-8 md:grid-cols-5 md:items-center md:p-12">
+  <div class="md:col-span-3">
+    <h2 class="text-2xl font-bold text-neutral-800 md:text-3xl">{title}</h2>
+    <p class="mt-3 text-lg text-pretty text-neutral-800/80">{subTitle}</p>
+    <ul class="mt-6 grid gap-3 sm:grid-cols-2">
+      {highlights.map(item => (
+        <li class="flex gap-x-2 font-medium text-neutral-800">
+          <Icon name="checkCircle" class="mt-0.5 h-5 w-5 shrink-0" />
+          {item}
+        </li>
+      ))}
+    </ul>
+  </div>
+  <div class="md:col-span-2 md:text-end">
+    {url ? (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group inline-flex items-center gap-x-2 rounded-xl bg-neutral-800 px-6 py-4 text-lg font-bold text-neutral-50 transition hover:bg-neutral-700"
+      >
+        {btn}
+        <Icon
+          name="openInNew"
+          class="h-5 w-5 transition group-hover:translate-x-0.5"
+        />
+      </a>
+    ) : (
+      <span class="inline-flex cursor-not-allowed items-center rounded-xl bg-neutral-800/20 px-6 py-4 text-lg font-bold text-neutral-800/60">
+        {comingSoon}
+      </span>
+    )}
+  </div>
+</div>
