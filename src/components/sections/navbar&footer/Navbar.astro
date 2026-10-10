@@ -10,8 +10,8 @@ import { localePath } from '@utils/locale';
 const { locale, copy: t } = Astro.locals;
 ---
 
-{/* Main header component */}
-<header class="sticky inset-x-0 top-4 z-50 flex w-full flex-wrap text-sm md:flex-nowrap md:justify-start">
+{/* 頂部導覽列：留在頁面最上方，往下捲時會跟著頁面捲走（不固定在螢幕上） */}
+<header class="relative inset-x-0 top-4 z-50 flex w-full flex-wrap text-sm md:flex-nowrap md:justify-start">
   {/* Navigation container */}
   <nav
     class="relative mx-2 w-full rounded-[36px] border border-yellow-100/40 bg-yellow-50/60 px-4 py-3 backdrop-blur-md md:flex md:items-center md:justify-between md:px-6 md:py-0 lg:px-8 xl:mx-auto dark:border-neutral-700/40 dark:bg-neutral-800/80 dark:backdrop-blur-md"

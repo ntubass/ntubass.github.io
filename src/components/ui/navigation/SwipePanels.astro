@@ -2,7 +2,7 @@
 /**
  * 可以左右滑動的分頁（職涯發展、學習資源）。搭配上方的 SubNav 選單使用：
  *
- *   <SubNav sticky="desktop" data-swipe-nav="career">
+ *   <SubNav data-swipe-nav="career">
  *     <a href="#talks" class="subnav-item" data-section="talks">職涯講座</a>
  *   </SubNav>
  *   <SwipePanels name="career" hint="左右滑動切換分類">
@@ -141,17 +141,19 @@ const { name, hint } = Astro.props;
       if (!smooth || indexNow() === index) settle();
     };
 
-    // 點選單：切換分頁；如果已經往下捲到分頁裡面，順便捲回選單的位置
+    // 點選單：切換分頁；如果已經往下捲到分頁中間，順便捲回新分頁的開頭（剛好在固定的選單下面）
     items.forEach((item, i) => {
       item.addEventListener('click', event => {
         event.preventDefault();
         const index = indexOf(item.dataset.section!);
         if (index < 0) return;
         goTo(index);
-        const top = nav.getBoundingClientRect().top;
-        if (top < 0) {
+        const gap =
+          track.getBoundingClientRect().top -
+          nav.getBoundingClientRect().bottom;
+        if (gap < 0) {
           window.scrollTo({
-            top: window.scrollY + top - 96,
+            top: window.scrollY + gap - 12,
             behavior: 'smooth',
           });
         }

@@ -52,9 +52,8 @@ const cardsFor = (field: string) =>
     image={heroImage}
   />
 
-  {/* 領域選單：疊在橫幅下緣。電腦版往下捲會停在導覽列下方，手機版留在原位 */}
+  {/* 領域選單：疊在橫幅下緣，往下捲到這裡時會固定在螢幕最上方 */}
   <SubNav
-    sticky="desktop"
     role="tablist"
     aria-label={copy.title}
     data-resource-tabs

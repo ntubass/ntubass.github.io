@@ -35,8 +35,8 @@ const interviews = await entriesFor('interviews', locale);
     image={heroImage}
   />
 
-  {/* 分類選單：疊在橫幅下緣。電腦版往下捲會停在導覽列下方，手機版留在原位 */}
-  <SubNav sticky="desktop" aria-label={copy.title} data-swipe-nav="career">
+  {/* 分類選單：疊在橫幅下緣，往下捲到這裡時會固定在螢幕最上方 */}
+  <SubNav aria-label={copy.title} data-swipe-nav="career">
     {copy.sectionNav.map(item => (
       <a href={`#${item.id}`} class="subnav-item" data-section={item.id}>
         {item.label}
