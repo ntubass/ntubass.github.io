@@ -92,7 +92,10 @@ export function buildPageMetadata(input: PageMetadataInput): PageMetadata {
   const publisher = {
     '@type': 'Organization',
     name: SITE.title,
-    logo: { '@type': 'ImageObject', url: absoluteUrl(withBase('/favicon.ico')) },
+    logo: {
+      '@type': 'ImageObject',
+      url: absoluteUrl(withBase('/favicon.ico')),
+    },
   };
 
   let jsonLd: Record<string, unknown>;
