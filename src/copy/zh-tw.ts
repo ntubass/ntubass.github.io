@@ -93,8 +93,7 @@ export const zhTw = {
       },
       {
         question: '刷學生證進不去系上空間怎麼辦？',
-        answer:
-          '請私訊系學會 IG，系學會會立即請系辦助教協助處理。',
+        answer: '請私訊系學會 IG，系學會會立即請系辦助教協助處理。',
       },
       {
         question: '有其他問題要找誰？',
@@ -298,7 +297,8 @@ export const zhTw = {
 
   resources: {
     title: '學習資源',
-    metaDescription: '臺大工管系學會依領域整理的學習資源：管顧、金融、FMCG、科技與新創，以及考古題。',
+    metaDescription:
+      '臺大工管系學會依領域整理的學習資源：管顧、金融、FMCG、科技與新創，以及考古題。',
     hero: {
       subTitle:
         '系學會依照不同領域整理了面試準備資源與講座筆記，點選下方的領域就能切換內容；考古題則整理在頁面最下方。',
@@ -349,7 +349,8 @@ export const zhTw = {
       {
         id: 'consulting',
         title: '管顧',
-        subTitle: '分析框架、Casebook 與顧問公司官方練習個案，準備個案面試從這裡開始。',
+        subTitle:
+          '分析框架、Casebook 與顧問公司官方練習個案，準備個案面試從這裡開始。',
       },
       {
         id: 'finance',
@@ -385,9 +386,11 @@ export const zhTw = {
 
   venues: {
     title: '場地借用',
-    metaDescription: '工管系管理學院教研館 103、105、108、110 教室的借用狀況、借用辦法與使用規範。',
+    metaDescription:
+      '工管系管理學院教研館 103、105、108、110 教室的借用狀況、借用辦法與使用規範。',
     hero: {
-      subTitle: '工管系在管理學院教研館有 103、105、108、110 四間教室，先看看哪些時段有空，再依照借用辦法登記。',
+      subTitle:
+        '工管系在管理學院教研館有 103、105、108、110 四間教室，先看看哪些時段有空，再依照借用辦法登記。',
     },
     schedule: {
       title: '借用狀況',
@@ -461,7 +464,8 @@ export const zhTw = {
 
   partners: {
     title: '合作夥伴',
-    metaDescription: '支持臺大工管系學會活動的企業與組織，以及合作方式與聯絡窗口。',
+    metaDescription:
+      '支持臺大工管系學會活動的企業與組織，以及合作方式與聯絡窗口。',
     hero: {
       subTitle:
         '感謝這些夥伴支持工管系學會的活動，一起為工管系同學創造更多機會。',
@@ -489,8 +493,7 @@ export const zhTw = {
         {
           icon: 'checkCircle' as IconName,
           title: '實習與徵才資訊',
-          description:
-            '提供實習或正職職缺，由系學會透過社群轉達給工管系同學。',
+          description: '提供實習或正職職缺，由系學會透過社群轉達給工管系同學。',
         },
       ],
     },
@@ -575,10 +578,26 @@ export const zhTw = {
       title: '招募流程',
       subTitle: '實際日期以系學會 IG 公告為準。',
       steps: [
-        { date: 'STEP 1', title: '開放報名', description: '系學會 IG 公告招募，填寫線上報名表。' },
-        { date: 'STEP 2', title: '報名截止', description: '確認報名資料，安排面談時段。' },
-        { date: 'STEP 3', title: '面談', description: '與現任幹部聊聊你的想法與想加入的部門。' },
-        { date: 'STEP 4', title: '公布結果', description: '通知錄取結果，歡迎加入新一屆系學會！' },
+        {
+          date: 'STEP 1',
+          title: '開放報名',
+          description: '系學會 IG 公告招募，填寫線上報名表。',
+        },
+        {
+          date: 'STEP 2',
+          title: '報名截止',
+          description: '確認報名資料，安排面談時段。',
+        },
+        {
+          date: 'STEP 3',
+          title: '面談',
+          description: '與現任幹部聊聊你的想法與想加入的部門。',
+        },
+        {
+          date: 'STEP 4',
+          title: '公布結果',
+          description: '通知錄取結果，歡迎加入新一屆系學會！',
+        },
       ],
     },
     process: {
@@ -590,7 +609,8 @@ export const zhTw = {
         },
         {
           title: '想加入的部門',
-          description: '了解你對各部門工作的想像，也會介紹每個部門實際在做什麼。',
+          description:
+            '了解你對各部門工作的想像，也會介紹每個部門實際在做什麼。',
         },
         {
           title: '你的問題',
@@ -602,7 +622,8 @@ export const zhTw = {
 
   about: {
     title: '關於我們',
-    metaDescription: '認識國立臺灣大學工商管理學系系學會：我們做的事、一年的活動、現任幹部與幹部招募。',
+    metaDescription:
+      '認識國立臺灣大學工商管理學系系學會：我們做的事、一年的活動、現任幹部與幹部招募。',
     hero: {
       subTitle:
         '我們是國立臺灣大學工商管理學系系學會，由工管系同學組成，為大家籌辦活動、整理資源，也管理系上的空間。',
@@ -618,7 +639,10 @@ export const zhTw = {
       title: '系學會的一年',
       items: [
         { year: '上學期', text: '小迎新、宿營、系烤，帶新生認識工管系。' },
-        { year: '下學期', text: '杜鵑花節、之夜、期末聯歡，和全系一起留下回憶。' },
+        {
+          year: '下學期',
+          text: '杜鵑花節、之夜、期末聯歡，和全系一起留下回憶。',
+        },
         { year: '暑假', text: '管理之鑰，為這一年畫下句點。' },
       ],
     },
