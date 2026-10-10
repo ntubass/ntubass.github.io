@@ -59,7 +59,10 @@ const columnTitle =
       </div>
 
       {/* 為什麼加入我們：只放圖示與標題，保持精簡 */}
-      <ul class="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label={copy.why.title}>
+      <ul
+        class="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4"
+        aria-label={copy.why.title}
+      >
         {copy.why.items.map(item => (
           <li
             class="flex items-center gap-x-3 rounded-xl bg-neutral-50/70 px-3 py-3 text-sm font-semibold text-neutral-800 sm:px-4 sm:text-base"
