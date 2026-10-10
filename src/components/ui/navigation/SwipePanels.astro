@@ -1,0 +1,188 @@
+---
+/**
+ * 可以左右滑動的分頁（職涯發展、學習資源）。搭配上方的 SubNav 選單使用：
+ *
+ *   <SubNav sticky="desktop" data-swipe-nav="career">
+ *     <a href="#talks" class="subnav-item" data-section="talks">職涯講座</a>
+ *   </SubNav>
+ *   <SwipePanels name="career" hint="左右滑動切換分類">
+ *     <Section id="talks">…</Section>
+ *   </SwipePanels>
+ *
+ * - 每個直接放進來的元素就是一頁，一次顯示一頁；手機上左右滑動換頁
+ * - 選單選項用 data-section 對應分頁的 id；換頁時選單會標成黃色
+ *   （role="tab" 的選項用 aria-selected，其他用 aria-current）
+ * - 分頁區高度跟著目前那一頁；網址會變成 #id，打開 /頁面#id 會直接顯示那一頁
+ */
+interface Props {
+  /** 對應選單上的 data-swipe-nav */
+  name: string;
+  /** 手機版選單下方的小提示 */
+  hint?: string;
+}
+
+const { name, hint } = Astro.props;
+---
+
+{hint && (
+  <p class="-mt-3 mb-3 flex items-center justify-center gap-x-2 text-xs text-neutral-500 md:hidden dark:text-neutral-400">
+    <span aria-hidden="true">←</span>
+    {hint}
+    <span aria-hidden="true">→</span>
+  </p>
+)}
+<div
+  class="swipe-panels flex items-start snap-x snap-mandatory overflow-x-auto overflow-y-hidden transition-[height] duration-300"
+  data-swipe-panels={name}
+>
+  <slot />
+</div>
+
+<style is:global>
+  .swipe-panels {
+    scrollbar-width: none;
+  }
+  .swipe-panels::-webkit-scrollbar {
+    display: none;
+  }
+  .swipe-panels > * {
+    flex: none;
+    width: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+</style>
+
+<script>
+  const setup = (track: HTMLElement) => {
+    const nav = document.querySelector<HTMLElement>(
+      `[data-swipe-nav="${track.dataset.swipePanels}"]`
+    );
+    const panels = [...track.children] as HTMLElement[];
+    if (!nav || !panels.length) return;
+    const items = [...nav.querySelectorAll<HTMLElement>('[data-section]')];
+    const isTab = (item: HTMLElement) => item.getAttribute('role') === 'tab';
+
+    let current = -1; // 已經停好的那一頁
+    let shown = -1; // 選單上標成黃色的那一頁
+    let target: number | null = null; // 點選單後正要滑過去的那一頁
+
+    const indexNow = () =>
+      Math.min(
+        panels.length - 1,
+        Math.max(0, Math.round(track.scrollLeft / track.clientWidth))
+      );
+    const indexOf = (id: string) => panels.findIndex(panel => panel.id === id);
+
+    // 分頁區的高度跟著目前那一頁
+    const fitHeight = () => {
+      track.style.height = `${panels[Math.max(current, 0)].offsetHeight}px`;
+    };
+
+    // 選單標出目前那一頁（滑動途中就會跟著變）
+    const highlight = (index: number) => {
+      if (index === shown) return;
+      shown = index;
+      items.forEach(item => {
+        const active = item.dataset.section === panels[index].id;
+        if (isTab(item)) {
+          item.setAttribute('aria-selected', String(active));
+          item.tabIndex = active ? 0 : -1;
+        } else if (active) item.setAttribute('aria-current', 'true');
+        else item.removeAttribute('aria-current');
+        if (active) {
+          // 選單在手機上放不下時也可以左右滑：把目前的選項移到中間（只動選單本身，不動頁面）
+          const bar = item.parentElement!;
+          bar.scrollTo({
+            left: item.offsetLeft - (bar.clientWidth - item.offsetWidth) / 2,
+            behavior: 'smooth',
+          });
+        }
+      });
+    };
+
+    // 滑動停下來之後才調整高度等版面：滑動途中改版面，瀏覽器會把分頁彈回原位
+    const settle = () => {
+      target = null;
+      const index = indexNow();
+      highlight(index);
+      if (index === current) return;
+      const first = current < 0;
+      current = index;
+      // 看不到的分頁不讓鍵盤 Tab 進去
+      panels.forEach((panel, i) => panel.toggleAttribute('inert', i !== index));
+      fitHeight();
+      // 網址跟著換成 #id，分享出去會直接打開同一頁（剛打開頁面時不改）
+      if (!first) history.replaceState(null, '', `#${panels[index].id}`);
+    };
+
+    let settleTimer: number | undefined;
+    track.addEventListener(
+      'scroll',
+      () => {
+        if (target === null) highlight(indexNow());
+        clearTimeout(settleTimer);
+        settleTimer = window.setTimeout(settle, 150);
+      },
+      { passive: true }
+    );
+    track.addEventListener('scrollend', () => {
+      clearTimeout(settleTimer);
+      settle();
+    });
+
+    const goTo = (index: number, smooth = true) => {
+      highlight(index);
+      if (smooth) target = index;
+      track.scrollTo({
+        left: index * track.clientWidth,
+        behavior: smooth ? 'smooth' : 'instant',
+      });
+      if (!smooth || indexNow() === index) settle();
+    };
+
+    // 點選單：切換分頁；如果已經往下捲到分頁裡面，順便捲回選單的位置
+    items.forEach((item, i) => {
+      item.addEventListener('click', event => {
+        event.preventDefault();
+        const index = indexOf(item.dataset.section!);
+        if (index < 0) return;
+        goTo(index);
+        const top = nav.getBoundingClientRect().top;
+        if (top < 0) {
+          window.scrollTo({
+            top: window.scrollY + top - 96,
+            behavior: 'smooth',
+          });
+        }
+      });
+      // 分頁按鈕可以用左右方向鍵切換
+      if (isTab(item)) {
+        item.addEventListener('keydown', event => {
+          const step =
+            event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+          if (!step) return;
+          event.preventDefault();
+          // 不讓 Preline 的分頁鍵盤功能也處理（它找不到自己的分頁會出錯）
+          event.stopPropagation();
+          const next = items[(i + step + items.length) % items.length];
+          next.focus();
+          goTo(indexOf(next.dataset.section!));
+        });
+      }
+    });
+
+    // 圖片載入或視窗改變大小時，重新對齊分頁並調整高度
+    panels.forEach(panel => new ResizeObserver(fitHeight).observe(panel));
+    window.addEventListener('resize', () => goTo(Math.max(current, 0), false));
+
+    // 打開 /頁面#id 這種網址時，直接顯示那一頁（按上一頁改變 # 時也一樣）
+    const fromHash = () => indexOf(decodeURIComponent(location.hash.slice(1)));
+    goTo(Math.max(fromHash(), 0), false);
+    window.addEventListener('hashchange', () => {
+      if (fromHash() >= 0) goTo(fromHash(), false);
+    });
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-swipe-panels]').forEach(setup);
+</script>

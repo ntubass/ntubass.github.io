@@ -3,20 +3,30 @@
  * 頁面內的選單（學習資源的領域分頁、職涯發展的快速跳轉）。
  * - 白色圓角膠囊列，往上疊在橫幅下緣，和橫幅接成一體
  * - 往下捲時會停在頂部導覽列下方（sticky），隨時可以切換
+ *   `sticky="desktop"`：只有電腦版會停住，手機版留在原位
  * - 手機版選項放不下時可以左右滑動
  *
  * 選項請加上 `class="subnav-item"`；目前選中的選項用 `aria-selected="true"`（分頁）
  * 或 `aria-current="true"`（跳轉連結）標示，就會變成黃色。
  */
 interface Props {
+  /** 什麼時候停在頂部：always（預設）或只有電腦版 desktop */
+  sticky?: 'always' | 'desktop';
   /** 傳給外層容器的屬性（例如 role="tablist"、data-*） */
   [attribute: string]: unknown;
 }
 
-const attrs = Astro.props;
+const { sticky = 'always', ...attrs } = Astro.props;
 ---
 
-<div class="subnav-shell sticky top-[5.25rem] z-40 -mt-8 mb-6 flex justify-center px-4 sm:px-6 lg:px-8">
+<div
+  class:list={[
+    'subnav-shell z-40 -mt-8 mb-6 flex justify-center px-4 sm:px-6 lg:px-8',
+    sticky === 'desktop'
+      ? 'relative md:sticky md:top-[5.25rem]'
+      : 'sticky top-[5.25rem]',
+  ]}
+>
   <div
     class="subnav-track flex max-w-full gap-1 overflow-x-auto rounded-full border border-neutral-200/80 bg-neutral-50/90 p-1.5 shadow-lg shadow-neutral-900/10 backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-800/90"
     {...attrs}

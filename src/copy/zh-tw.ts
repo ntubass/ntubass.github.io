@@ -198,7 +198,9 @@ export const zhTw = {
       subTitle:
         '從認識產業、累積經驗到實際求職，系學會整理學長姐的經驗與各種資源，陪你找到自己的職涯方向。',
     },
-    /** 頁面上方的快速跳轉按鈕，id 對應頁面上各區塊 */
+    /** 手機版選單下方的小提示 */
+    swipeHint: '左右滑動切換分類',
+    /** 頁面上方的分類選單，id 對應下面各區塊 */
     sectionNav: [
       { id: 'interviews', label: '職涯訪談' },
       { id: 'talks', label: '職涯講座' },
@@ -345,6 +347,8 @@ export const zhTw = {
      * 要新增領域：在這裡加一個 `{ id, title, subTitle }`，並把 `id` 加進
      * `src/content.config.ts` 的 `field` 清單。
      */
+    /** 手機版選單下方的小提示 */
+    swipeHint: '左右滑動切換領域',
     sections: [
       {
         id: 'consulting',

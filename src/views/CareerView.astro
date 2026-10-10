@@ -8,14 +8,15 @@ import FeatureGrid from '@components/ui/blocks/FeatureGrid.astro';
 import CardInterviewRow from '@components/ui/cards/CardInterviewRow.astro';
 import LinkPanel from '@components/ui/blocks/LinkPanel.astro';
 import SubNav from '@components/ui/navigation/SubNav.astro';
+import SwipePanels from '@components/ui/navigation/SwipePanels.astro';
 import { getCopy } from '@/copy';
 import { entriesFor } from '@utils/content';
 import type { MarketingLocale } from '@utils/locale';
 
 /**
- * 職涯發展：職涯訪談 → 職涯講座 → 業師與學長姐輔導 → 實習與求職資源
- * → 實習申請經驗。
- * 每個區塊都有 id，可以用 `/career#interviews` 這種網址直接跳過去。
+ * 職涯發展：職涯訪談 → 職涯講座 → 學長姐交流 → 實習與求職資源 → 實習申請經驗。
+ * 五個區塊並排成可以左右滑動的分頁，上方選單點了會切換過去，並標出目前在哪一個。
+ * 每個區塊都有 id，可以用 `/career#interviews` 這種網址直接打開那一頁。
  */
 interface Props {
   locale: MarketingLocale;
@@ -34,95 +35,59 @@ const interviews = await entriesFor('interviews', locale);
     image={heroImage}
   />
 
-  {/* 快速跳轉：疊在橫幅下緣，往下捲時會停在導覽列下方，並標出目前看到的區塊 */}
-  <SubNav aria-label={copy.title} data-career-nav>
+  {/* 分類選單：疊在橫幅下緣。電腦版往下捲會停在導覽列下方，手機版留在原位 */}
+  <SubNav sticky="desktop" aria-label={copy.title} data-swipe-nav="career">
     {copy.sectionNav.map(item => (
       <a href={`#${item.id}`} class="subnav-item" data-section={item.id}>
         {item.label}
       </a>
     ))}
   </SubNav>
+  {/* 可以左右滑動的分頁，一個分類一頁 */}
+  <SwipePanels name="career" hint={copy.swipeHint}>
+    {/* 職涯訪談 */}
+    <Section id="interviews" tone="muted">
+      <SectionHeader
+        title={copy.interviews.title}
+        subTitle={copy.interviews.subTitle}
+      />
+      {interviews.length === 0 ? (
+        <p class="text-neutral-600 dark:text-neutral-400">
+          {copy.interviews.empty}
+        </p>
+      ) : (
+        <div class="space-y-6">
+          {interviews.map(interview => (
+            <CardInterviewRow interview={interview} />
+          ))}
+        </div>
+      )}
+    </Section>
 
-  {/* 職涯訪談 */}
-  <Section id="interviews" tone="muted">
-    <SectionHeader
-      title={copy.interviews.title}
-      subTitle={copy.interviews.subTitle}
-    />
-    {interviews.length === 0 ? (
-      <p class="text-neutral-600 dark:text-neutral-400">
-        {copy.interviews.empty}
-      </p>
-    ) : (
-      <div class="space-y-6">
-        {interviews.map(interview => (
-          <CardInterviewRow interview={interview} />
-        ))}
-      </div>
-    )}
-  </Section>
+    {/* 職涯講座 */}
+    <Section id="talks" tone="muted">
+      <SectionHeader title={copy.talks.title} subTitle={copy.talks.subTitle} />
+      <FeatureGrid items={copy.talks.items} />
+    </Section>
 
-  {/* 職涯講座 */}
-  <Section id="talks">
-    <SectionHeader title={copy.talks.title} subTitle={copy.talks.subTitle} />
-    <FeatureGrid items={copy.talks.items} />
-  </Section>
+    {/* 學長姐交流 */}
+    <Section id="mentorship" tone="muted">
+      <SectionHeader
+        title={copy.mentorship.title}
+        subTitle={copy.mentorship.subTitle}
+      />
+      <FeatureGrid items={copy.mentorship.items} columns={2} />
+    </Section>
 
-  {/* 業師與學長姐輔導 */}
-  <Section id="mentorship" tone="muted">
-    <SectionHeader
-      title={copy.mentorship.title}
-      subTitle={copy.mentorship.subTitle}
-    />
-    <FeatureGrid items={copy.mentorship.items} columns={2} />
-  </Section>
+    {/* 實習與求職資源 */}
+    <Section id="jobs" tone="muted">
+      <SectionHeader title={copy.jobs.title} subTitle={copy.jobs.subTitle} />
+      <FeatureGrid items={copy.jobs.items} />
+    </Section>
 
-  {/* 實習與求職資源 */}
-  <Section id="jobs">
-    <SectionHeader title={copy.jobs.title} subTitle={copy.jobs.subTitle} />
-    <FeatureGrid items={copy.jobs.items} />
-  </Section>
-
-  {/* 實習申請經驗：連到外部的經驗分享（網址在 copy.career.internships.url） */}
-  <Section id="internships" tone="muted">
-    <LinkPanel {...copy.internships} />
-  </Section>
+    {/* 實習申請經驗：連到外部的經驗分享（網址在 copy.career.internships.url） */}
+    <Section id="internships" tone="muted">
+      <LinkPanel {...copy.internships} />
+    </Section>
+  </SwipePanels>
 </MainLayout>
-
-<script>
-  // 捲動時標出目前看到的區塊（黃色）
-  const links = [
-    ...document.querySelectorAll<HTMLAnchorElement>('[data-career-nav] [data-section]'),
-  ];
-  const sections = links
-    .map(link => document.getElementById(link.dataset.section!))
-    .filter((el): el is HTMLElement => el !== null);
-
-  const setActive = (id: string | null) => {
-    links.forEach(link => {
-      if (link.dataset.section === id) {
-        link.setAttribute('aria-current', 'true');
-        // 手機版選單可以左右滑：把目前的選項捲進畫面
-        link.scrollIntoView({ block: 'nearest', inline: 'center' });
-      } else {
-        link.removeAttribute('aria-current');
-      }
-    });
-  };
-
-  let current: string | null = null;
-  const update = () => {
-    // 以畫面上方 40% 的位置為準，看它落在哪個區塊裡
-    const line = window.innerHeight * 0.4;
-    let active: string | null = null;
-    for (const section of sections) {
-      if (section.getBoundingClientRect().top <= line) active = section.id;
-    }
-    if (active !== current) {
-      current = active;
-      setActive(active);
-    }
-  };
-  window.addEventListener('scroll', update, { passive: true });
-  update();
-</script>
