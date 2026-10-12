@@ -1,15 +1,16 @@
 /**
- * 活動成果的時間軸，順序就是時間軸上由上到下的順序。
+ * 活動成果的活動清單，順序就是頁面上由上到下的順序。
  *
  * - `id`：英文代號，會變成網址錨點，例如 /activities#camp
  * - `name`：活動名稱
- * - `time`：時間軸上顯示的時間，自由填寫，例如 '9 月'、'上學期・10 月'
+ * - `time`：顯示在活動名稱上方的時間，自由填寫，例如 '9 月'、'上學期・10 月'
  * - `description`：活動簡介（一兩句話）
  * - `website`：活動網站網址（留空字串的話按鈕會是灰色、不能點）
  * - `photos`：活動相簿網址，例如 Google 相簿、IG 精選動態（留空字串的話按鈕會是灰色、不能點）
- * - `photo`：卡片上方的活動照片檔名（選填）。把照片放進 `src/images/activities/`，
- *   這裡只要填檔名，例如 `photo: 'camp.jpg'`。建議用橫式照片（寬:高 = 16:9）；
- *   沒填的話會顯示灰色的照片預留位置。
+ * - `images`：活動照片的檔名清單（選填），可以放好幾張，頁面上可以左右滑動瀏覽。
+ *   把照片放進 `src/images/activities/`，這裡只要填檔名，例如
+ *   `images: ['camp-1.jpg', 'camp-2.jpg', 'camp-3.jpg']`。
+ *   建議用橫式照片（寬:高 = 4:3），重點放在中間；沒填的話會顯示暖色的預留位置。
  */
 export interface ClubActivity {
   id: string;
@@ -18,8 +19,8 @@ export interface ClubActivity {
   description: string;
   website: string;
   photos: string;
-  /** `src/images/activities/` 裡的檔名，例如 'camp.jpg' */
-  photo?: string;
+  /** `src/images/activities/` 裡的檔名，例如 ['camp-1.jpg', 'camp-2.jpg'] */
+  images?: string[];
 }
 
 export const activities: ClubActivity[] = [

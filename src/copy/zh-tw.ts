@@ -519,6 +519,10 @@ export const zhTw = {
     photosBtn: '活動相簿',
     /** 連結還沒填時，滑鼠移到灰色按鈕上顯示的提示 */
     comingSoon: '連結即將開放',
+    /** 照片輪播的按鈕（給螢幕閱讀器與滑鼠提示用） */
+    prevPhoto: '上一張照片',
+    nextPhoto: '下一張照片',
+    photoPlaceholder: '活動照片',
   },
 
   /** 幹部招募（顯示在「關於我們」頁最下方） */

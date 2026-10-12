@@ -1,0 +1,155 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Icon from '@components/ui/icons/Icon.astro';
+
+/**
+ * 可以左右滑動的照片輪播（活動成果每個活動的照片）。
+ * - 手機上直接左右滑；電腦上滑鼠移上去會出現左右箭頭
+ * - 右上角顯示「第幾張 / 共幾張」，下方的小圓點可以直接跳到某一張
+ * - 沒有照片時顯示幾張暖色的預留位置，一樣可以滑
+ */
+interface Props {
+  images: ImageMetadata[];
+  /** 照片的替代文字（會加上第幾張） */
+  alt: string;
+  /** 沒有照片時的預留位置漸層，一個漸層就是一張 */
+  placeholders: string[];
+  labels: { prev: string; next: string; placeholder: string };
+}
+
+const { images, alt, placeholders, labels } = Astro.props;
+const count = images.length || placeholders.length;
+const arrow =
+  'absolute top-1/2 hidden size-10 -translate-y-1/2 place-content-center rounded-full bg-neutral-50/90 text-neutral-800 shadow-md opacity-0 transition group-hover/carousel:opacity-100 hover:bg-white focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-0! md:grid';
+---
+
+<div class="group/carousel relative" data-photo-carousel>
+  <div
+    class="photo-carousel-track flex snap-x snap-mandatory overflow-x-auto rounded-3xl bg-neutral-300/60 shadow-md shadow-neutral-900/10 dark:bg-neutral-800"
+    data-track
+  >
+    {
+      images.length
+        ? images.map((image, i) => (
+            <div class="relative aspect-[4/3] w-full flex-none snap-start snap-always">
+              <Image
+                src={image}
+                alt={`${alt}（${i + 1}）`}
+                class="absolute inset-0 h-full w-full object-cover"
+                width={1000}
+                height={750}
+                loading={i === 0 ? 'eager' : 'lazy'}
+              />
+            </div>
+          ))
+        : placeholders.map((gradient, i) => (
+            <div
+              class:list={[
+                'relative flex aspect-[4/3] w-full flex-none snap-start snap-always flex-col items-center justify-center gap-2 bg-linear-to-br text-white/70',
+                gradient,
+              ]}
+            >
+              <Icon name="photo" class="h-12 w-12" />
+              <span class="text-sm font-semibold">
+                {labels.placeholder} {i + 1}
+              </span>
+            </div>
+          ))
+    }
+  </div>
+
+  {
+    count > 1 && (
+      <>
+        {/* 第幾張 / 共幾張 */}
+        <span class="pointer-events-none absolute top-3 right-3 rounded-full bg-neutral-900/50 px-2.5 py-1 text-xs font-bold text-white tabular-nums backdrop-blur-sm">
+          <span data-counter>1</span> / {count}
+        </span>
+
+        {/* 左右箭頭（電腦版） */}
+        <button
+          type="button"
+          class:list={[arrow, 'left-3']}
+          aria-label={labels.prev}
+          data-prev
+          disabled
+        >
+          <Icon name="arrowRight" class="size-5 rotate-180" />
+        </button>
+        <button
+          type="button"
+          class:list={[arrow, 'right-3']}
+          aria-label={labels.next}
+          data-next
+        >
+          <Icon name="arrowRight" class="size-5" />
+        </button>
+
+        {/* 小圓點 */}
+        <div class="mt-3 flex justify-center gap-1.5">
+          {Array.from({ length: count }, (_, i) => (
+            <button
+              type="button"
+              class="h-2 w-2 rounded-full bg-neutral-300 transition-all aria-[current=true]:w-5 aria-[current=true]:bg-yellow-400 dark:bg-neutral-700"
+              aria-label={`${i + 1} / ${count}`}
+              aria-current={i === 0 ? 'true' : undefined}
+              data-dot={i}
+            />
+          ))}
+        </div>
+      </>
+    )
+  }
+</div>
+
+<style is:global>
+  .photo-carousel-track {
+    scrollbar-width: none;
+  }
+  .photo-carousel-track::-webkit-scrollbar {
+    display: none;
+  }
+</style>
+
+<script>
+  document
+    .querySelectorAll<HTMLElement>('[data-photo-carousel]')
+    .forEach(carousel => {
+      const track = carousel.querySelector<HTMLElement>('[data-track]')!;
+      const counter = carousel.querySelector('[data-counter]');
+      const prev = carousel.querySelector<HTMLButtonElement>('[data-prev]');
+      const next = carousel.querySelector<HTMLButtonElement>('[data-next]');
+      const dots = [
+        ...carousel.querySelectorAll<HTMLButtonElement>('[data-dot]'),
+      ];
+      const count = track.children.length;
+      if (count < 2) return;
+
+      const go = (index: number) =>
+        track.scrollTo({
+          left: Math.max(0, Math.min(count - 1, index)) * track.clientWidth,
+          behavior: 'smooth',
+        });
+
+      // 依照目前滑到哪一張，更新數字、小圓點與箭頭
+      let current = 0;
+      const update = () => {
+        const index = Math.round(track.scrollLeft / track.clientWidth);
+        if (index === current) return;
+        current = index;
+        if (counter) counter.textContent = String(index + 1);
+        dots.forEach((dot, i) => {
+          if (i === index) dot.setAttribute('aria-current', 'true');
+          else dot.removeAttribute('aria-current');
+        });
+        if (prev) prev.disabled = index === 0;
+        if (next) next.disabled = index === count - 1;
+      };
+      track.addEventListener('scroll', update, { passive: true });
+
+      prev?.addEventListener('click', () => go(current - 1));
+      next?.addEventListener('click', () => go(current + 1));
+      dots.forEach((dot, i) => dot.addEventListener('click', () => go(i)));
+    });
+</script>
