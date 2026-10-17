@@ -44,7 +44,9 @@ const { locale, copy: t } = Astro.locals;
             url={localePath(locale, link.path)}
             name={t.nav.labels[link.id]}
             home={link.id === 'home'}
-            alsoActiveOn={link.alsoActiveOn?.map(path => localePath(locale, path))}
+            alsoActiveOn={link.alsoActiveOn?.map(path =>
+              localePath(locale, path)
+            )}
           />
         ))}
 

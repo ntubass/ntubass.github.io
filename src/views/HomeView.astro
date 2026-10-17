@@ -79,16 +79,16 @@ const stats = [
       </p>
     </div>
     <dl class="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {stats.map(stat => (
-          <div class="flex flex-col rounded-2xl bg-neutral-50 p-6 text-center dark:bg-neutral-800">
-            <dt class="text-sm text-neutral-600 dark:text-neutral-400">
-              {stat.label}
-            </dt>
-            <dd class="order-first text-3xl font-bold text-orange-400 lg:text-4xl dark:text-orange-300">
-              {stat.value}
-            </dd>
-          </div>
-        ))}
+      {stats.map(stat => (
+        <div class="flex flex-col rounded-2xl bg-neutral-50 p-6 text-center dark:bg-neutral-800">
+          <dt class="text-sm text-neutral-600 dark:text-neutral-400">
+            {stat.label}
+          </dt>
+          <dd class="order-first text-3xl font-bold text-orange-400 lg:text-4xl dark:text-orange-300">
+            {stat.value}
+          </dd>
+        </div>
+      ))}
     </dl>
   </Section>
 
@@ -161,10 +161,7 @@ const stats = [
     <div class="grid gap-6 md:grid-cols-3">
       {copy.testimonials.quotes.map(quote => (
         <figure class="flex flex-col rounded-2xl bg-neutral-50 p-6 dark:bg-neutral-800">
-          <Icon
-            name="quotation"
-            class="h-8 w-8 text-yellow-400"
-          />
+          <Icon name="quotation" class="h-8 w-8 text-yellow-400" />
           <blockquote class="mt-4 grow text-pretty text-neutral-700 dark:text-neutral-300">
             {quote.content}
           </blockquote>
@@ -189,5 +186,10 @@ const stats = [
     </div>
   </Section>
 
-  <FAQ id="faq" title={t.faq.title} subTitle={t.faq.subTitle} faqs={t.faq.faqs} />
+  <FAQ
+    id="faq"
+    title={t.faq.title}
+    subTitle={t.faq.subTitle}
+    faqs={t.faq.faqs}
+  />
 </MainLayout>

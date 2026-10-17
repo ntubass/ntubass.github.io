@@ -24,21 +24,21 @@ Routes (nav order): `/` (home), `/activities` (timeline from `src/data_files/act
 
 ## Where things live
 
-| Purpose                 | Path                                                         |
-| ----------------------- | ------------------------------------------------------------ |
-| All page text           | [src/copy/zh-tw.ts](src/copy/zh-tw.ts) (defines the `Copy` shape) |
-| Site name, email, URL   | [src/data_files/constants.ts](src/data_files/constants.ts)  |
-| Nav links, social links | [src/data_files/navigation.ts](src/data_files/navigation.ts) |
-| Officer roster          | [src/data_files/team.ts](src/data_files/team.ts); photos in `src/images/team/` |
-| Partner logo wall       | [src/data_files/partners.ts](src/data_files/partners.ts); logos in `src/images/partners/` |
-| Recruiting on/off, form | [src/data_files/recruit.ts](src/data_files/recruit.ts)      |
-| Page banner photos      | `src/images/heroes/*.jpg` (one per page, see `CREDITS.md` there); rendered by `PageHero` |
-| Venues & bookings       | [src/data_files/venues.ts](src/data_files/venues.ts) (venues, bookings, form URL) |
-| Activity timeline       | [src/data_files/activities.ts](src/data_files/activities.ts) (name, time, intro, website, photos) |
-| Interviews / resources | `src/content/{interviews,resources}/zh-tw/*.md`, schemas in [content.config.ts](src/content.config.ts) |
-| Views (one per route)   | [src/views/](src/views/); `src/pages/` files are one-line shells |
+| Purpose                 | Path                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| All page text           | [src/copy/zh-tw.ts](src/copy/zh-tw.ts) (defines the `Copy` shape)                                      |
+| Site name, email, URL   | [src/data_files/constants.ts](src/data_files/constants.ts)                                             |
+| Nav links, social links | [src/data_files/navigation.ts](src/data_files/navigation.ts)                                           |
+| Officer roster          | [src/data_files/team.ts](src/data_files/team.ts); photos in `src/images/team/`                         |
+| Partner logo wall       | [src/data_files/partners.ts](src/data_files/partners.ts); logos in `src/images/partners/`              |
+| Recruiting on/off, form | [src/data_files/recruit.ts](src/data_files/recruit.ts)                                                 |
+| Page banner photos      | `src/images/heroes/*.jpg` (one per page, see `CREDITS.md` there); rendered by `PageHero`               |
+| Venues & bookings       | [src/data_files/venues.ts](src/data_files/venues.ts) (venues, bookings, form URL)                      |
+| Activity timeline       | [src/data_files/activities.ts](src/data_files/activities.ts) (name, time, intro, website, photos)      |
+| Interviews / resources  | `src/content/{interviews,resources}/zh-tw/*.md`, schemas in [content.config.ts](src/content.config.ts) |
+| Views (one per route)   | [src/views/](src/views/); `src/pages/` files are one-line shells                                       |
 | Layout                  | [src/layouts/MainLayout.astro](src/layouts/MainLayout.astro) builds `<head>` via `buildPageMetadata()` |
-| Shared section pieces   | `components/ui/blocks/` (Section, SectionHeader, FeatureGrid, Timeline), `components/sections/` |
+| Shared section pieces   | `components/ui/blocks/` (Section, SectionHeader, FeatureGrid, Timeline), `components/sections/`        |
 
 ## Conventions
 
