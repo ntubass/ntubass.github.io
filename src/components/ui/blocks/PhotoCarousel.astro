@@ -29,78 +29,74 @@ const arrow =
     class="photo-carousel-track flex snap-x snap-mandatory overflow-x-auto rounded-3xl bg-neutral-300/60 shadow-md shadow-neutral-900/10 dark:bg-neutral-800"
     data-track
   >
-    {
-      images.length
-        ? images.map((image, i) => (
-            <div class="relative aspect-[4/3] w-full flex-none snap-start snap-always">
-              <Image
-                src={image}
-                alt={`${alt}（${i + 1}）`}
-                class="absolute inset-0 h-full w-full object-cover"
-                width={1000}
-                height={750}
-                loading={i === 0 ? 'eager' : 'lazy'}
-              />
-            </div>
-          ))
-        : placeholders.map((gradient, i) => (
-            <div
-              class:list={[
-                'relative flex aspect-[4/3] w-full flex-none snap-start snap-always flex-col items-center justify-center gap-2 bg-linear-to-br text-white/70',
-                gradient,
-              ]}
-            >
-              <Icon name="photo" class="h-12 w-12" />
-              <span class="text-sm font-semibold">
-                {labels.placeholder} {i + 1}
-              </span>
-            </div>
-          ))
-    }
+    {images.length
+      ? images.map((image, i) => (
+          <div class="relative aspect-[4/3] w-full flex-none snap-start snap-always">
+            <Image
+              src={image}
+              alt={`${alt}（${i + 1}）`}
+              class="absolute inset-0 h-full w-full object-cover"
+              width={1000}
+              height={750}
+              loading={i === 0 ? 'eager' : 'lazy'}
+            />
+          </div>
+        ))
+      : placeholders.map((gradient, i) => (
+          <div
+            class:list={[
+              'relative flex aspect-[4/3] w-full flex-none snap-start snap-always flex-col items-center justify-center gap-2 bg-linear-to-br text-white/70',
+              gradient,
+            ]}
+          >
+            <Icon name="photo" class="h-12 w-12" />
+            <span class="text-sm font-semibold">
+              {labels.placeholder} {i + 1}
+            </span>
+          </div>
+        ))}
   </div>
 
-  {
-    count > 1 && (
-      <>
-        {/* 第幾張 / 共幾張 */}
-        <span class="pointer-events-none absolute top-3 right-3 rounded-full bg-neutral-900/50 px-2.5 py-1 text-xs font-bold text-white tabular-nums backdrop-blur-sm">
-          <span data-counter>1</span> / {count}
-        </span>
+  {count > 1 && (
+    <>
+      {/* 第幾張 / 共幾張 */}
+      <span class="pointer-events-none absolute top-3 right-3 rounded-full bg-neutral-900/50 px-2.5 py-1 text-xs font-bold text-white tabular-nums backdrop-blur-sm">
+        <span data-counter>1</span> / {count}
+      </span>
 
-        {/* 左右箭頭（電腦版） */}
-        <button
-          type="button"
-          class:list={[arrow, 'left-3']}
-          aria-label={labels.prev}
-          data-prev
-          disabled
-        >
-          <Icon name="arrowRight" class="size-5 rotate-180" />
-        </button>
-        <button
-          type="button"
-          class:list={[arrow, 'right-3']}
-          aria-label={labels.next}
-          data-next
-        >
-          <Icon name="arrowRight" class="size-5" />
-        </button>
+      {/* 左右箭頭（電腦版） */}
+      <button
+        type="button"
+        class:list={[arrow, 'left-3']}
+        aria-label={labels.prev}
+        data-prev
+        disabled
+      >
+        <Icon name="arrowRight" class="size-5 rotate-180" />
+      </button>
+      <button
+        type="button"
+        class:list={[arrow, 'right-3']}
+        aria-label={labels.next}
+        data-next
+      >
+        <Icon name="arrowRight" class="size-5" />
+      </button>
 
-        {/* 小圓點 */}
-        <div class="mt-3 flex justify-center gap-1.5">
-          {Array.from({ length: count }, (_, i) => (
-            <button
-              type="button"
-              class="h-2 w-2 rounded-full bg-neutral-300 transition-all aria-[current=true]:w-5 aria-[current=true]:bg-yellow-400 dark:bg-neutral-700"
-              aria-label={`${i + 1} / ${count}`}
-              aria-current={i === 0 ? 'true' : undefined}
-              data-dot={i}
-            />
-          ))}
-        </div>
-      </>
-    )
-  }
+      {/* 小圓點 */}
+      <div class="mt-3 flex justify-center gap-1.5">
+        {Array.from({ length: count }, (_, i) => (
+          <button
+            type="button"
+            class="h-2 w-2 rounded-full bg-neutral-300 transition-all aria-[current=true]:w-5 aria-[current=true]:bg-yellow-400 dark:bg-neutral-700"
+            aria-label={`${i + 1} / ${count}`}
+            aria-current={i === 0 ? 'true' : undefined}
+            data-dot={i}
+          />
+        ))}
+      </div>
+    </>
+  )}
 </div>
 
 <style is:global>
