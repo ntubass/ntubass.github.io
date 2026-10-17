@@ -67,7 +67,9 @@ export function withBase(path = '/'): string {
 function stripBase(pathname: string): string {
   if (!BASE) return pathname;
   if (pathname === BASE) return '/';
-  return pathname.startsWith(`${BASE}/`) ? pathname.slice(BASE.length) : pathname;
+  return pathname.startsWith(`${BASE}/`)
+    ? pathname.slice(BASE.length)
+    : pathname;
 }
 
 /**

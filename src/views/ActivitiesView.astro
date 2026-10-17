@@ -67,94 +67,92 @@ const disabledButton =
 
   <Section>
     <ol class="divide-y divide-neutral-300/70 dark:divide-neutral-700">
-      {
-        activities.map((activity, i) => {
-          // 照片左右交替：單數在左、雙數在右
-          const photoRight = i % 2 === 1;
-          const buttons = [
-            {
-              label: copy.websiteBtn,
-              url: activity.website,
-              style: 'bg-yellow-400 text-neutral-800 hover:bg-yellow-500',
-            },
-            {
-              label: copy.photosBtn,
-              url: activity.photos,
-              style:
-                'border border-neutral-300 bg-neutral-50 text-neutral-700 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700',
-            },
-          ];
-          return (
-            <li
-              id={activity.id}
-              class="scroll-mt-8 py-10 first:pt-0 last:pb-0 md:py-14"
+      {activities.map((activity, i) => {
+        // 照片左右交替：單數在左、雙數在右
+        const photoRight = i % 2 === 1;
+        const buttons = [
+          {
+            label: copy.websiteBtn,
+            url: activity.website,
+            style: 'bg-yellow-400 text-neutral-800 hover:bg-yellow-500',
+          },
+          {
+            label: copy.photosBtn,
+            url: activity.photos,
+            style:
+              'border border-neutral-300 bg-neutral-50 text-neutral-700 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700',
+          },
+        ];
+        return (
+          <li
+            id={activity.id}
+            class="scroll-mt-8 py-10 first:pt-0 last:pb-0 md:py-14"
+          >
+            <article
+              class:list={[
+                'flex flex-col gap-6 md:items-center md:gap-12 lg:gap-16',
+                photoRight ? 'md:flex-row-reverse' : 'md:flex-row',
+              ]}
             >
-              <article
-                class:list={[
-                  'flex flex-col gap-6 md:items-center md:gap-12 lg:gap-16',
-                  photoRight ? 'md:flex-row-reverse' : 'md:flex-row',
-                ]}
-              >
-                {/* 活動照片：可以左右滑動 */}
-                <div class="md:w-1/2">
-                  <PhotoCarousel
-                    images={(activity.images ?? []).map(photoOf)}
-                    alt={activity.name}
-                    placeholders={placeholdersFor(i)}
-                    labels={{
-                      prev: copy.prevPhoto,
-                      next: copy.nextPhoto,
-                      placeholder: copy.photoPlaceholder,
-                    }}
-                  />
-                </div>
+              {/* 活動照片：可以左右滑動 */}
+              <div class="md:w-1/2">
+                <PhotoCarousel
+                  images={(activity.images ?? []).map(photoOf)}
+                  alt={activity.name}
+                  placeholders={placeholdersFor(i)}
+                  labels={{
+                    prev: copy.prevPhoto,
+                    next: copy.nextPhoto,
+                    placeholder: copy.photoPlaceholder,
+                  }}
+                />
+              </div>
 
-                {/* 文字 */}
-                <div class="flex flex-col justify-center md:w-1/2">
-                  <div class="flex items-center gap-x-3">
-                    <span class="text-4xl font-bold text-yellow-400/80 tabular-nums">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span class="rounded-full bg-orange-400/15 px-3 py-1 text-sm font-bold text-orange-500 dark:text-orange-300">
-                      {activity.time}
-                    </span>
-                  </div>
-                  <h2 class="mt-3 text-2xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200">
-                    {activity.name}
-                  </h2>
-                  <p class="mt-3 text-pretty text-neutral-600 md:text-lg dark:text-neutral-400">
-                    {activity.description}
-                  </p>
-                  <div class="mt-6 flex flex-wrap gap-2">
-                    {buttons.map(button =>
-                      button.url ? (
-                        <a
-                          href={button.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class:list={[buttonBase, button.style]}
-                        >
-                          {button.label}
-                          <Icon name="openInNew" class="h-4 w-4" />
-                        </a>
-                      ) : (
-                        <span
-                          class:list={[buttonBase, disabledButton]}
-                          aria-disabled="true"
-                          title={copy.comingSoon}
-                        >
-                          {button.label}
-                          <Icon name="openInNew" class="h-4 w-4" />
-                        </span>
-                      )
-                    )}
-                  </div>
+              {/* 文字 */}
+              <div class="flex flex-col justify-center md:w-1/2">
+                <div class="flex items-center gap-x-3">
+                  <span class="text-4xl font-bold text-yellow-400/80 tabular-nums">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span class="rounded-full bg-orange-400/15 px-3 py-1 text-sm font-bold text-orange-500 dark:text-orange-300">
+                    {activity.time}
+                  </span>
                 </div>
-              </article>
-            </li>
-          );
-        })
-      }
+                <h2 class="mt-3 text-2xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200">
+                  {activity.name}
+                </h2>
+                <p class="mt-3 text-pretty text-neutral-600 md:text-lg dark:text-neutral-400">
+                  {activity.description}
+                </p>
+                <div class="mt-6 flex flex-wrap gap-2">
+                  {buttons.map(button =>
+                    button.url ? (
+                      <a
+                        href={button.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class:list={[buttonBase, button.style]}
+                      >
+                        {button.label}
+                        <Icon name="openInNew" class="h-4 w-4" />
+                      </a>
+                    ) : (
+                      <span
+                        class:list={[buttonBase, disabledButton]}
+                        aria-disabled="true"
+                        title={copy.comingSoon}
+                      >
+                        {button.label}
+                        <Icon name="openInNew" class="h-4 w-4" />
+                      </span>
+                    )
+                  )}
+                </div>
+              </div>
+            </article>
+          </li>
+        );
+      })}
     </ol>
   </Section>
 </MainLayout>
