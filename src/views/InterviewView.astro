@@ -20,8 +20,17 @@ interface Props {
 const { interview } = Astro.props;
 const locale = localeOf(interview);
 const copy = getCopy(locale).interviews;
-const { title, summary, date, interviewee, industry, quote, photo, photoAlt, writers } =
-  interview.data;
+const {
+  title,
+  summary,
+  date,
+  interviewee,
+  industry,
+  quote,
+  photo,
+  photoAlt,
+  writers,
+} = interview.data;
 const { Content } = await render(interview);
 
 // 文章最後推薦其他訪談（最多兩篇）

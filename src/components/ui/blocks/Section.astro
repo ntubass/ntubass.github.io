@@ -16,8 +16,7 @@ const { id, tone = 'plain', class: className } = Astro.props;
   id={id}
   class:list={[
     'scroll-mt-40',
-    tone === 'muted' &&
-      'rounded-3xl bg-neutral-100/70 dark:bg-neutral-900/40',
+    tone === 'muted' && 'rounded-3xl bg-neutral-100/70 dark:bg-neutral-900/40',
     className,
   ]}
 >
