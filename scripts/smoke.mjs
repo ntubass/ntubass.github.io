@@ -32,7 +32,7 @@ const EXPECTATIONS = {
   '/profile/': ['data-profile-form', 'capture="environment"'],
   '/interviews/2026-pm-chen/': ['"@type":"Article"', 'interview-body'],
   '/interviews/': ['/career#interviews'],
-  '/about-us/': ['id="team"'],
+  '/about-us/': ['id="team"', 'id="wish"'],
   '/activities/': ['id="welcome"', 'id="key"', '管理之鑰'],
 };
 

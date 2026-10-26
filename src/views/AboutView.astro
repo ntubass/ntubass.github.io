@@ -7,12 +7,12 @@ import SectionHeader from '@components/ui/blocks/SectionHeader.astro';
 import Timeline from '@components/ui/blocks/Timeline.astro';
 import TeamGrid from '@components/sections/about/TeamGrid.astro';
 import Icon from '@components/ui/icons/Icon.astro';
-import { SITE } from '@data/constants';
+import { SITE, WISH_FORM_URL } from '@data/constants';
 import { getCopy } from '@/copy';
 import type { MarketingLocale } from '@utils/locale';
 
 /**
- * 關於我們：我們是誰 & 系學會的一年 → 現任幹部 → 聯絡我們。
+ * 關於我們：我們是誰 & 系學會的一年 → 現任幹部 → 許願池（#wish）→ 聯絡我們。
  * 幹部招募目前不顯示；要恢復時把 `RecruitSection` 放回聯絡我們下面（見 src/data_files/recruit.ts）。
  */
 interface Props {
@@ -54,10 +54,47 @@ const history = copy.history.items.map(item => ({
     <TeamGrid />
   </Section>
 
+  {/* 許願池：按鈕連到表單，網址在 src/data_files/constants.ts 的 WISH_FORM_URL */}
+  <Section id="wish">
+    <div class="relative mx-auto max-w-2xl">
+      <svg class="absolute -top-5 -left-3 z-20 h-12 w-12 sm:-left-8" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#bc8d3b" d="M12 0c.8 6.6 5.4 11.2 12 12-6.6.8-11.2 5.4-12 12-.8-6.6-5.4-11.2-12-12C6.6 11.2 11.2 6.6 12 0z" />
+      </svg>
+      <svg class="absolute -right-2 -bottom-4 z-20 h-10 w-10 sm:-right-6" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#9a3a33" d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8-6.2 3.8 1.6-7L2 9.2l7.1-.6z" />
+      </svg>
+      <div class="torn-shadow">
+        <div class="torn -rotate-1 px-7 py-12 text-center sm:px-14 sm:py-14">
+          <h2 class="text-3xl font-black tracking-tight text-neutral-800 md:text-[2.5rem] dark:text-neutral-50">
+            <span class="marker">{copy.wish.title}</span>
+          </h2>
+          <p class="mx-auto mt-5 max-w-md text-lg leading-[1.85] text-neutral-700 dark:text-neutral-300">
+            {copy.wish.description}
+          </p>
+          {WISH_FORM_URL ? (
+            <a
+              href={WISH_FORM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-sticker mt-8 inline-flex items-center gap-x-2 rounded-[14px] bg-orange-500 px-7 py-3.5 text-lg font-black text-neutral-50 hover:bg-orange-600"
+            >
+              {copy.wish.btn}
+              <Icon name="openInNew" class="h-4 w-4" />
+            </a>
+          ) : (
+            <span class="mt-8 inline-flex cursor-not-allowed items-center rounded-[14px] bg-neutral-300 px-7 py-3.5 text-lg font-black text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400">
+              {copy.wish.unavailable}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  </Section>
+
   <Section tone="muted" id="contact">
     <div class="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-neutral-800 md:text-3xl dark:text-neutral-200">
+        <h2 class="text-2xl font-black text-neutral-800 md:text-3xl dark:text-neutral-100">
           {copy.contact.title}
         </h2>
         <p class="mt-2 text-lg text-neutral-600 dark:text-neutral-400">

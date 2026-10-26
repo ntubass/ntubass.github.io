@@ -736,6 +736,13 @@ export const zhTw = {
       title: '現任幹部',
       subTitle: '這一屆由正副會長與五個部門組成，每個部門各司其職。',
     },
+    /** 許願池：按鈕連到表單（網址在 src/data_files/constants.ts 的 WISH_FORM_URL） */
+    wish: {
+      title: '許願池',
+      description: '希望系學會辦什麼活動、想改善系上的哪些地方，或是有什麼話想說，都歡迎丟進許願池。',
+      btn: '我要許願',
+      unavailable: '許願表單準備中',
+    },
     contact: {
       title: '聯絡我們',
       description: '活動合作、贊助邀約或任何問題，都歡迎來信或私訊系學會 IG。',

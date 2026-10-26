@@ -18,6 +18,12 @@ export const SITE = {
   author: '臺大工管系學會',
 };
 
+/**
+ * 「關於我們」頁的許願池按鈕連到的表單（Google 表單等）。
+ * 留空字串的話按鈕會顯示成灰色的「許願表單準備中」、不能點。
+ */
+export const WISH_FORM_URL = '';
+
 // 每頁的標題、描述文字在 `src/copy/zh-tw.ts`；
 // `src/utils/metadata.ts` 會用它們組出 <head>。
 export const OG = {
