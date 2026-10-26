@@ -16,12 +16,11 @@ const { id, tone = 'plain', class: className } = Astro.props;
   id={id}
   class:list={[
     'scroll-mt-40',
-    tone === 'muted' &&
-      'rounded-3xl bg-neutral-100/70 dark:bg-neutral-900/40',
+    tone === 'muted' && 'paper-sheet my-4',
     className,
   ]}
 >
-  <div class="mx-auto max-w-[85rem] px-4 py-12 sm:px-6 lg:px-8 lg:py-16 2xl:max-w-full">
+  <div class="mx-auto max-w-[85rem] px-4 py-14 sm:px-6 lg:px-10 lg:py-20 2xl:max-w-full">
     <slot />
   </div>
 </section>

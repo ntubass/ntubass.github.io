@@ -25,7 +25,7 @@ const makeId = (base: string, index: number) => `${base}${index + 1}`;
   <div class="grid gap-10 md:grid-cols-5">
     <div class="md:col-span-2">
       <div class="max-w-xs">
-        <h2 class="text-2xl font-bold text-neutral-800 md:text-3xl md:leading-tight dark:text-neutral-200">
+        <h2 class="text-3xl font-black tracking-tight text-neutral-800 md:text-[2.5rem] md:leading-tight dark:text-neutral-100">
           <Fragment set:html={title} />
         </h2>
         {subTitle && (
@@ -36,7 +36,7 @@ const makeId = (base: string, index: number) => `${base}${index + 1}`;
       </div>
     </div>
     <div class="md:col-span-3">
-      <div class="hs-accordion-group divide-y divide-neutral-300 dark:divide-neutral-700">
+      <div class="hs-accordion-group divide-y divide-dashed divide-neutral-400 rounded-md bg-neutral-50/80 px-6 py-2 shadow-[0_12px_24px_-12px_rgb(60_45_30/0.45)] dark:divide-neutral-600 dark:bg-neutral-800/80">
         {faqs.map((faq, i) => (
           <AccordionItem
             {...faq}

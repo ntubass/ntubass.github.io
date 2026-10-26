@@ -18,17 +18,29 @@
   --color-black: #000;
   --color-white: #fff;
 
-  --color-gray-50: oklch(0.985 0.002 247.839);
-  --color-gray-100: oklch(0.967 0.003 264.542);
-  --color-gray-200: oklch(0.928 0.006 264.531);
-  --color-gray-300: oklch(0.872 0.01 258.338);
-  --color-gray-400: oklch(0.707 0.022 261.325);
-  --color-gray-500: oklch(0.551 0.027 264.364);
-  --color-gray-600: oklch(0.446 0.03 256.802);
-  --color-gray-700: oklch(0.373 0.034 259.733);
-  --color-gray-800: oklch(0.278 0.033 256.848);
-  --color-gray-900: oklch(0.21 0.034 264.665);
-  --color-gray-950: oklch(0.13 0.028 261.692);
+  /*
+    設計系統見根目錄 DESIGN.md。配色取自系學會 logo：
+    neutral 是暖灰（紙 → 墨）、yellow 是金色系（金星芒）、orange 是紅色系（紅星星），
+    所以既有的 bg-yellow-400、text-orange-400 會自動變成品牌色。gray、zinc 沿用 neutral。
+  */
+  --color-kraft: #ddd5c4;
+  --color-paper: #fbf8f1;
+  --color-paper-warm: #efe9dc;
+  --color-ink: #2b2420;
+
+  --font-sans: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+
+  --color-gray-50: var(--color-neutral-50);
+  --color-gray-100: var(--color-neutral-100);
+  --color-gray-200: var(--color-neutral-200);
+  --color-gray-300: var(--color-neutral-300);
+  --color-gray-400: var(--color-neutral-400);
+  --color-gray-500: var(--color-neutral-500);
+  --color-gray-600: var(--color-neutral-600);
+  --color-gray-700: var(--color-neutral-700);
+  --color-gray-800: var(--color-neutral-800);
+  --color-gray-900: var(--color-neutral-900);
+  --color-gray-950: var(--color-neutral-950);
 
   --color-indigo-50: oklch(0.962 0.018 272.314);
   --color-indigo-100: oklch(0.93 0.034 272.788);
@@ -42,41 +54,41 @@
   --color-indigo-900: oklch(0.359 0.144 278.697);
   --color-indigo-950: oklch(0.257 0.09 281.288);
 
-  --color-neutral-50: oklch(0.985 0 0);
-  --color-neutral-100: oklch(0.97 0 0);
-  --color-neutral-200: oklch(0.922 0 0);
-  --color-neutral-300: oklch(0.87 0 0);
-  --color-neutral-400: oklch(0.708 0 0);
-  --color-neutral-500: oklch(0.556 0 0);
-  --color-neutral-600: oklch(0.439 0 0);
-  --color-neutral-700: oklch(0.371 0 0);
-  --color-neutral-800: oklch(0.269 0 0);
-  --color-neutral-900: oklch(0.205 0 0);
-  --color-neutral-950: oklch(0.145 0 0);
+  --color-neutral-50: #fbf8f1;
+  --color-neutral-100: #f4efe4;
+  --color-neutral-200: #e9e2d3;
+  --color-neutral-300: #d3c9b5;
+  --color-neutral-400: #ada190;
+  --color-neutral-500: #857a69;
+  --color-neutral-600: #5f564a;
+  --color-neutral-700: #463f36;
+  --color-neutral-800: #2b2420;
+  --color-neutral-900: #1f1a17;
+  --color-neutral-950: #151210;
 
-  --color-yellow-50: oklch(0.987 0.026 102.212);
-  --color-yellow-100: oklch(0.973 0.071 103.193);
-  --color-yellow-200: oklch(0.945 0.129 101.54);
-  --color-yellow-300: oklch(0.905 0.182 98.111);
-  --color-yellow-400: oklch(0.852 0.199 91.936);
-  --color-yellow-500: oklch(0.795 0.184 86.047);
-  --color-yellow-600: oklch(0.681 0.162 75.834);
-  --color-yellow-700: oklch(0.554 0.135 66.442);
-  --color-yellow-800: oklch(0.476 0.114 61.907);
-  --color-yellow-900: oklch(0.421 0.095 57.708);
-  --color-yellow-950: oklch(0.286 0.066 53.813);
+  --color-yellow-50: #fbf5e6;
+  --color-yellow-100: #f5e8c6;
+  --color-yellow-200: #ecd59a;
+  --color-yellow-300: #e0bd6c;
+  --color-yellow-400: #d1a548;
+  --color-yellow-500: #bc8d3b;
+  --color-yellow-600: #9c7230;
+  --color-yellow-700: #7d5a28;
+  --color-yellow-800: #5f4420;
+  --color-yellow-900: #47331a;
+  --color-yellow-950: #2b1f10;
 
-  --color-orange-50: oklch(0.98 0.016 73.684);
-  --color-orange-100: oklch(0.954 0.038 75.164);
-  --color-orange-200: oklch(0.901 0.076 70.697);
-  --color-orange-300: oklch(70.72% 0.182 40.56);
-  --color-orange-400: oklch(67.4% 0.2072 39.23);
-  --color-orange-500: oklch(61.86% 0.1946 38.88);
-  --color-orange-600: oklch(0.646 0.222 41.116);
-  --color-orange-700: oklch(0.553 0.195 38.402);
-  --color-orange-800: oklch(0.47 0.157 37.304);
-  --color-orange-900: oklch(0.408 0.123 38.172);
-  --color-orange-950: oklch(0.266 0.079 36.259);
+  --color-orange-50: #fbefed;
+  --color-orange-100: #f5d9d5;
+  --color-orange-200: #ebb3ab;
+  --color-orange-300: #d98b80;
+  --color-orange-400: #b5524a;
+  --color-orange-500: #9a3a33;
+  --color-orange-600: #83302a;
+  --color-orange-700: #6b2722;
+  --color-orange-800: #531e1a;
+  --color-orange-900: #3d1613;
+  --color-orange-950: #250d0b;
 
   --color-red-50: oklch(0.971 0.013 17.38);
   --color-red-100: oklch(0.936 0.032 17.717);
@@ -90,17 +102,17 @@
   --color-red-900: oklch(0.396 0.141 25.723);
   --color-red-950: oklch(0.258 0.092 26.042);
 
-  --color-zinc-50: oklch(0.985 0 0);
-  --color-zinc-100: oklch(0.967 0.001 286.375);
-  --color-zinc-200: oklch(0.92 0.004 286.32);
-  --color-zinc-300: oklch(0.871 0.006 286.286);
-  --color-zinc-400: oklch(0.705 0.015 286.067);
-  --color-zinc-500: oklch(0.552 0.016 285.938);
-  --color-zinc-600: oklch(0.442 0.017 285.786);
-  --color-zinc-700: oklch(0.37 0.013 285.805);
-  --color-zinc-800: oklch(0.274 0.006 286.033);
-  --color-zinc-900: oklch(0.21 0.006 285.885);
-  --color-zinc-950: oklch(0.141 0.005 285.823);
+  --color-zinc-50: var(--color-neutral-50);
+  --color-zinc-100: var(--color-neutral-100);
+  --color-zinc-200: var(--color-neutral-200);
+  --color-zinc-300: var(--color-neutral-300);
+  --color-zinc-400: var(--color-neutral-400);
+  --color-zinc-500: var(--color-neutral-500);
+  --color-zinc-600: var(--color-neutral-600);
+  --color-zinc-700: var(--color-neutral-700);
+  --color-zinc-800: var(--color-neutral-800);
+  --color-zinc-900: var(--color-neutral-900);
+  --color-zinc-950: var(--color-neutral-950);
 }
 
 /*
@@ -124,4 +136,176 @@
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 中文標題只在標點後換行，不會斷在詞的中間 */
+  h1,
+  h2,
+  h3 {
+    word-break: keep-all;
+  }
+  p,
+  li {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--color-yellow-300);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-orange-500);
+    outline-offset: 2px;
+  }
 }
+
+@layer components {
+  /*
+    牛皮紙背景：深淺不均的色塊 + 皺褶起伏 + 紙纖維 + 對摺的摺痕。
+    皺褶與摺痕放在固定的一層（不隨頁面捲動），像一張墊在後面的紙。
+  */
+  .kraft-bg {
+    background:
+      radial-gradient(ellipse 60% 45% at 18% 22%, rgb(255 250 235 / 0.22), transparent 70%),
+      radial-gradient(ellipse 50% 60% at 82% 70%, rgb(120 100 70 / 0.12), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 35% 90%, rgb(255 248 230 / 0.14), transparent 70%),
+      var(--color-kraft);
+    background-attachment: fixed;
+  }
+  .kraft-bg::before,
+  .kraft-bg::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+  }
+  .kraft-bg::before {
+    opacity: 0.32;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.0045' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeDiffuseLighting lighting-color='%23fff' surfaceScale='3.2'%3E%3CfeDistantLight azimuth='225' elevation='58'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+    background-size: 900px 900px;
+  }
+  .kraft-bg::after {
+    opacity: 0.6;
+    background:
+      linear-gradient(90deg, transparent calc(58% - 70px), rgb(80 62 40 / 0.1) calc(58% - 2px), rgb(255 252 240 / 0.55) 58%, rgb(80 62 40 / 0.16) calc(58% + 2px), transparent calc(58% + 26px)),
+      linear-gradient(180deg, transparent calc(64% - 60px), rgb(80 62 40 / 0.09) calc(64% - 2px), rgb(255 252 240 / 0.5) 64%, rgb(80 62 40 / 0.14) calc(64% + 2px), transparent calc(64% + 24px)),
+      linear-gradient(32deg, transparent calc(22% - 30px), rgb(80 62 40 / 0.06) calc(22% - 1px), rgb(255 252 240 / 0.35) 22%, transparent calc(22% + 14px)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .26 0 0 0 0 .18 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .dark .kraft-bg {
+    background: var(--color-neutral-900);
+  }
+  .dark .kraft-bg::before {
+    opacity: 0.12;
+  }
+  .dark .kraft-bg::after {
+    opacity: 0.25;
+    mix-blend-mode: screen;
+  }
+
+  /* 撕紙卡片：不規則的撕痕邊緣（落影要加在外層，因為 clip-path 會把陰影裁掉） */
+  .torn {
+    background: var(--color-paper-warm);
+    clip-path: polygon(0 3%, 6% 0, 14% 2%, 23% 0, 34% 2.5%, 45% 0.5%, 57% 2%, 68% 0, 80% 2%, 91% 0.5%, 100% 2.5%, 99% 30%, 100% 62%, 98.5% 97%, 88% 100%, 76% 98%, 63% 100%, 50% 98.5%, 37% 100%, 24% 98%, 12% 100%, 2% 98%, 0 70%, 1% 35%);
+  }
+  .torn-shadow {
+    filter: drop-shadow(0 24px 34px rgb(60 45 30 / 0.35));
+  }
+  .dark .torn {
+    background: var(--color-neutral-800);
+  }
+
+  /* 長區塊用的紙張：只有上下緣是撕痕（用遮罩做，不會裁到內容） */
+  .paper-sheet {
+    --tear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='14' preserveAspectRatio='none'%3E%3Cpath d='M0 14V6l12-4 14 5 16-6 13 6 18-4 15 5 17-6 14 5 16-3 15 4 18-6 13 5 16-4 14 6 15-5 14 4V14z'/%3E%3C/svg%3E");
+    --tear-flip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='14' preserveAspectRatio='none'%3E%3Cpath d='M0 0v8l12 4 14-5 16 6 13-6 18 4 15-5 17 6 14-5 16 3 15-4 18 6 13-5 16 4 14-6 15 5 14-4V0z'/%3E%3C/svg%3E");
+    background: var(--color-paper);
+    -webkit-mask:
+      var(--tear) top / 240px 14px repeat-x,
+      linear-gradient(#000 0 0) center / 100% calc(100% - 26px) no-repeat,
+      var(--tear-flip) bottom / 240px 14px repeat-x;
+    mask:
+      var(--tear) top / 240px 14px repeat-x,
+      linear-gradient(#000 0 0) center / 100% calc(100% - 26px) no-repeat,
+      var(--tear-flip) bottom / 240px 14px repeat-x;
+  }
+  .dark .paper-sheet {
+    background: var(--color-neutral-800);
+  }
+
+  /* 拍立得相框 */
+  .polaroid {
+    position: relative;
+    background: #fdfbf6;
+    padding: 0.6rem 0.6rem 2.4rem;
+    box-shadow: 0 14px 22px rgb(60 45 30 / 0.28);
+  }
+  .polaroid > figcaption {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0.55rem;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+
+  /* 紙膠帶 */
+  .tape {
+    position: absolute;
+    top: -0.8rem;
+    left: 50%;
+    z-index: 1;
+    width: 5.5rem;
+    height: 1.6rem;
+    transform: translateX(-50%) rotate(-4deg);
+    background: rgb(188 141 59 / 0.55);
+  }
+  .tape-red {
+    background: rgb(154 58 51 / 0.45);
+  }
+
+  /* 螢光筆底線（只用在 Hero 標題） */
+  .marker {
+    background: linear-gradient(transparent 62%, rgb(188 141 59 / 0.45) 62%);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  /* 像貼紙的按鈕：墨色邊框 + 硬陰影，按下時往下沉 */
+  .btn-sticker {
+    border: 2px solid var(--color-ink);
+    box-shadow: 4px 5px 0 var(--color-ink);
+    transition:
+      transform 150ms,
+      box-shadow 150ms,
+      background-color 150ms;
+  }
+  .btn-sticker:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 6px 0 var(--color-ink);
+  }
+  .btn-sticker:active {
+    transform: translate(3px, 4px);
+    box-shadow: 1px 1px 0 var(--color-ink);
+  }
+  /* 深色模式：邊框改成紙色、陰影改成黑色，才看得出貼紙感 */
+  .dark .btn-sticker {
+    border-color: var(--color-neutral-100);
+    box-shadow: 4px 5px 0 rgb(0 0 0 / 0.55);
+  }
+  .dark .btn-sticker:hover {
+    box-shadow: 5px 6px 0 rgb(0 0 0 / 0.55);
+  }
+  .dark .btn-sticker:active {
+    box-shadow: 1px 1px 0 rgb(0 0 0 / 0.55);
+  }
+}
+

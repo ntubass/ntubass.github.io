@@ -1,0 +1,256 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import { heroPhotos } from '@data/hero';
+
+/**
+ * 首頁最上方：鋪滿的拍立得拼貼，標題放在最上層、置中的撕紙卡片上。
+ *
+ * 整個拼貼是一張固定比例（1256 × 790）的畫布：照片的位置用百分比、大小用 cqw，
+ * 所以會跟著視窗等比縮放、排列不變；畫布寬度同時不超過一個畫面的高度。
+ * 手機版（760px 以下）改成直排：兩張小照片、一張大照片，下面接文字卡片。
+ *
+ * 照片在 `src/data_files/hero.ts` 設定；default slot 放按鈕。
+ */
+interface Props {
+  /** 標題；用 `<br />` 分行，每一行會加上螢光筆底線 */
+  title: string;
+  subTitle?: string;
+}
+
+const { title, subTitle } = Astro.props;
+const lines = title.split(/<br\s*\/?>/);
+
+const files = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/images/**/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true }
+);
+const photos = heroPhotos.map(photo => {
+  const image = files[`/src/images/${photo.file}`];
+  if (!image)
+    throw new Error(
+      `找不到首頁拼貼的照片 src/images/${photo.file}，請確認 src/data_files/hero.ts 的檔名。`
+    );
+  return { ...photo, image: image.default };
+});
+
+// 10 個位置（以 1256 × 790 的畫布計算）：left、top、寬度、是否為橫的大相框、傾斜角度
+const W = 1256;
+const H = 790;
+const slots = [
+  [0, 0, false, -5],
+  [265, 20, true, 3],
+  [615, -6, false, -3],
+  [876, 14, true, 4],
+  [150, 230, true, -8],
+  [850, 230, false, 7],
+  [10, 420, true, 4],
+  [330, 380, false, -4],
+  [590, 440, true, 2],
+  [950, 370, false, -6],
+] as const;
+const cards = slots.map(([left, top, wide, rotate], i) => ({
+  photo: photos[i % photos.length],
+  wide,
+  style: `left: ${((left / W) * 100).toFixed(2)}%; top: ${((top / H) * 100).toFixed(2)}%; --w: ${(((wide ? 380 : 300) / W) * 100).toFixed(2)}; --r: ${rotate}deg; z-index: ${i + 1}`,
+}));
+---
+
+<section class="home-hero" aria-label={lines.join('')}>
+  <div class="board">
+    {cards.map((card, i) => (
+      <figure class:list={['polaroid hero-pol', card.wide && 'is-wide']} style={card.style}>
+        <span class:list={['tape', i % 2 === 1 && 'tape-red']} aria-hidden="true" />
+        <Image
+          src={card.photo.image}
+          alt=""
+          widths={[400, 700, 1000]}
+          sizes={card.wide ? '(min-width: 760px) 32vw, 100vw' : '(min-width: 760px) 25vw, 50vw'}
+          loading={i < 4 ? 'eager' : 'lazy'}
+          style={card.photo.position ? `object-position: ${card.photo.position}` : undefined}
+        />
+        {card.photo.caption && <figcaption>{card.photo.caption}</figcaption>}
+      </figure>
+    ))}
+    {/* logo 上的紅星星與金星芒 */}
+    <svg class="hero-star" style="left: 23.9%; top: 25.9%; --s: 3.98cqw" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#9a3a33" d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8-6.2 3.8 1.6-7L2 9.2l7.1-.6z" />
+    </svg>
+    <svg class="hero-star" style="left: 95.5%; top: 81%; --s: 3.34cqw" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#bc8d3b" d="M12 0c.8 6.6 5.4 11.2 12 12-6.6.8-11.2 5.4-12 12-.8-6.6-5.4-11.2-12-12C6.6 11.2 11.2 6.6 12 0z" />
+    </svg>
+  </div>
+
+  <div class="hero-card-wrap torn-shadow">
+    <div class="torn hero-card">
+      <h1>
+        {lines.map((line, i) => (
+          <>
+            {i > 0 && <br />}
+            <span class="marker" set:html={line} />
+          </>
+        ))}
+      </h1>
+      {subTitle && <p class="hero-lead">{subTitle}</p>}
+      {Astro.slots.has('default') && (
+        <div class="hero-actions">
+          <slot />
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .home-hero {
+    position: relative;
+    container-type: inline-size;
+    /* 寬度跟著視窗，同時不超過一個畫面的高度（扣掉導覽列），一打開就看得到整個拼貼 */
+    width: min(calc(100vw - 48px), 1680px, calc((100svh - 110px) * 1256 / 790));
+    left: 50%;
+    transform: translateX(-50%);
+    aspect-ratio: 1256 / 790;
+    margin-top: 0.5rem;
+    margin-bottom: 3cqw;
+  }
+  .board {
+    position: absolute;
+    inset: 0;
+  }
+  .hero-pol {
+    position: absolute;
+    width: calc(var(--w) * 1cqw);
+    padding: 0.95cqw 0.95cqw 3.5cqw;
+    transform: rotate(var(--r));
+  }
+  .hero-pol :global(img) {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+  .hero-pol.is-wide :global(img) {
+    aspect-ratio: 4 / 3;
+  }
+  .hero-pol .tape {
+    top: -1.1cqw;
+    width: 7.3cqw;
+    height: 2.1cqw;
+  }
+  .hero-pol figcaption {
+    bottom: 0.8cqw;
+    font-size: max(10px, 1.1cqw);
+  }
+  .hero-star {
+    position: absolute;
+    z-index: 51;
+    width: var(--s);
+    height: var(--s);
+  }
+
+  .hero-card-wrap {
+    position: absolute;
+    z-index: 50;
+    left: 50%;
+    top: 50%;
+    width: clamp(460px, 52cqw, 860px);
+    transform: translate(-50%, -50%);
+  }
+  .hero-card {
+    padding: clamp(28px, 4.2cqw, 64px) clamp(26px, 4.5cqw, 70px);
+    text-align: center;
+  }
+  .hero-card h1 {
+    font-size: clamp(34px, 4.7cqw, 78px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+  .hero-lead {
+    margin: clamp(14px, 1.8cqw, 26px) auto 0;
+    max-width: 30em;
+    font-size: clamp(14px, 1.35cqw, 20px);
+    line-height: 1.85;
+    color: var(--color-neutral-700);
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin-top: clamp(20px, 2.6cqw, 40px);
+  }
+  :global(.dark) .hero-card h1 {
+    color: var(--color-neutral-50);
+  }
+  :global(.dark) .hero-lead {
+    color: var(--color-neutral-300);
+  }
+
+  /* 手機版：直排，兩張小照片並排、一張大照片，下面接文字卡片 */
+  @media (max-width: 760px) {
+    .home-hero {
+      width: auto;
+      left: auto;
+      transform: none;
+      aspect-ratio: auto;
+      container-type: normal;
+      display: flex;
+      flex-direction: column;
+      margin: 0.5rem 0 2rem;
+    }
+    .board {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 14px;
+      padding: 18px 4px 0;
+    }
+    .hero-pol {
+      position: relative;
+      left: auto !important;
+      top: auto !important;
+      width: auto;
+      padding: 8px 8px 30px;
+      transform: rotate(var(--m, -2deg));
+    }
+    .hero-pol:nth-child(even) {
+      --m: 3deg;
+    }
+    .hero-pol:nth-child(n + 4),
+    .hero-star {
+      display: none;
+    }
+    .hero-pol:nth-child(2) {
+      order: 3;
+      grid-column: span 2;
+    }
+    .hero-pol .tape {
+      top: -10px;
+      width: 64px;
+      height: 18px;
+    }
+    .hero-pol figcaption {
+      bottom: 7px;
+      font-size: 12px;
+    }
+    .hero-card-wrap {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: auto;
+      transform: none;
+      margin-top: -44px;
+    }
+    .hero-card {
+      padding: 32px 22px 36px;
+    }
+    .hero-card h1 {
+      font-size: 32px;
+    }
+    .hero-lead {
+      font-size: 15px;
+    }
+  }
+</style>

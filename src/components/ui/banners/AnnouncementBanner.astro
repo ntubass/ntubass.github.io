@@ -1,6 +1,5 @@
 ---
 import Icon from '@components/ui/icons/Icon.astro';
-import { withBase } from '@utils/locale';
 
 const { title, btnId, btnTitle, url } = Astro.props;
 const { copy: t } = Astro.locals;
@@ -21,27 +20,21 @@ const storageKey = `banner-dismissed:${btnId}`;
     role="region"
     aria-label={t.banner.region}
   >
-    <div
-      class="rounded-xl bg-neutral-800 bg-cover bg-center bg-no-repeat p-4 text-center shadow-xs dark:bg-neutral-200"
-      style={`background-image: url('${withBase('/banner-pattern.svg')}')`}
-    >
+    <div class="torn-shadow">
+    <div class="torn bg-neutral-800! p-4 text-center dark:bg-neutral-100!">
       <div class="flex items-center justify-center">
         <div class="ml-auto">
           {title && (
-            <p class="me-2 inline-block font-medium text-neutral-50 dark:text-neutral-700">
+            <p class="me-3 inline-block font-bold text-neutral-50 dark:text-neutral-800">
               {title}
             </p>
           )}
           <a
-            class="group inline-flex items-center gap-x-2 rounded-full border-2 border-neutral-50 px-3 py-2 text-sm font-semibold text-neutral-50 backdrop-brightness-75 transition duration-300 hover:border-neutral-100/70 hover:text-neutral-50/70 disabled:pointer-events-none disabled:opacity-50 sm:backdrop-brightness-100 dark:border-neutral-700 dark:text-neutral-700 dark:backdrop-brightness-100 dark:hover:border-neutral-700/70 dark:hover:text-neutral-800/70 dark:focus:outline-hidden"
+            class="inline-flex items-center rounded-xl border-2 border-neutral-50 bg-orange-500 px-4 py-2 text-sm font-black text-neutral-50 transition hover:bg-orange-600"
             href={url}
             target={/^https?:/.test(url) ? '_blank' : undefined}
           >
             {btnTitle}
-            <Icon
-              name="arrowRight"
-              class="size-4 shrink-0 transition duration-300 group-hover:translate-x-1"
-            />
           </a>
         </div>
         <button
@@ -53,6 +46,7 @@ const storageKey = `banner-dismissed:${btnId}`;
           <Icon name="close" class="size-5 shrink-0" />
         </button>
       </div>
+    </div>
     </div>
   </div>
 </astro-banner>

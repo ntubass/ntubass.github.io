@@ -12,10 +12,10 @@ const { locale, copy: t } = Astro.locals;
 ---
 
 {/* 頂部導覽列：留在頁面最上方，往下捲時會跟著頁面捲走（不固定在螢幕上） */}
-<header class="relative inset-x-0 top-4 z-50 flex w-full flex-wrap text-sm md:flex-nowrap md:justify-start">
+<header class="relative inset-x-0 z-50 flex w-full flex-wrap pt-2 text-sm md:flex-nowrap md:justify-start">
   {/* Navigation container */}
   <nav
-    class="relative mx-2 w-full rounded-[36px] border border-yellow-100/40 bg-yellow-50/60 px-4 py-3 backdrop-blur-md md:flex md:items-center md:justify-between md:px-6 md:py-0 lg:px-8 xl:mx-auto dark:border-neutral-700/40 dark:bg-neutral-800/80 dark:backdrop-blur-md"
+    class="relative w-full px-1 py-3 md:flex md:items-center md:justify-between md:py-2"
     aria-label="Global"
   >
     <div class="flex items-center justify-between">
@@ -39,7 +39,7 @@ const { locale, copy: t } = Astro.locals;
       class="hs-collapse hidden grow basis-full overflow-hidden transition-all duration-300 md:block"
     >
       {/* Navigation links container */}
-      <div class="mt-5 flex flex-col gap-x-0 gap-y-4 md:mt-0 md:flex-row md:items-center md:justify-end md:gap-x-4 md:gap-y-0 md:ps-7 lg:gap-x-7">
+      <div class="torn mt-4 flex flex-col gap-y-1 p-4 md:mt-0 md:flex-row md:items-center md:justify-end md:gap-x-1 md:bg-transparent md:p-0 md:ps-7 md:[clip-path:none] lg:gap-x-1.5 dark:md:bg-transparent">
         {navLinks.map(link => (
           <NavLink
             url={localePath(locale, link.path)}

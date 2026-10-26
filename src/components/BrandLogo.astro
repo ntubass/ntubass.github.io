@@ -1,9 +1,10 @@
 ---
+import { Image } from 'astro:assets';
 import { SITE } from '@data/constants';
+import logo from '@images/brand/logo.jpg';
 
 /**
- * 文字版 logo：系學會名稱。
- * 有圖片 logo 的話，可以把這裡換成 <Image src={logo} alt={SITE.title} />。
+ * 品牌字標：圓形 logo（`src/images/brand/logo.jpg`）+ 系學會名稱。
  */
 interface Props {
   class?: string;
@@ -12,8 +13,15 @@ interface Props {
 const { class: className } = Astro.props;
 ---
 
-<span class:list={['inline-flex leading-tight', className]}>
-  <span class="text-lg font-bold tracking-tight text-neutral-800 dark:text-neutral-200">
+<span class:list={['inline-flex items-center gap-x-3 leading-tight', className]}>
+  <Image
+    src={logo}
+    alt=""
+    width={88}
+    height={88}
+    class="h-11 w-11 shrink-0 rounded-full object-cover shadow-[0_0_0_3px_var(--color-paper-warm)]"
+  />
+  <span class="text-[1.05rem] font-black tracking-tight text-neutral-800 dark:text-neutral-100">
     {SITE.title}
   </span>
 </span>

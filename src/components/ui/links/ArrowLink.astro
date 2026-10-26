@@ -14,7 +14,7 @@ const { url, title, back = false } = Astro.props;
 
 <a
   href={url}
-  class="group inline-flex items-center gap-x-1.5 rounded-lg font-semibold text-orange-400 ring-zinc-500 outline-hidden transition duration-300 hover:text-orange-500 focus-visible:ring-3 dark:text-orange-300 dark:ring-zinc-200 dark:hover:text-orange-400"
+  class="group inline-flex items-center gap-x-1.5 rounded-sm font-bold text-neutral-800 underline decoration-yellow-500 decoration-[3px] underline-offset-[6px] transition-colors hover:text-orange-500 hover:decoration-orange-500 dark:text-neutral-100"
 >
   {back && (
     <Icon
@@ -23,10 +23,4 @@ const { url, title, back = false } = Astro.props;
     />
   )}
   {title}
-  {!back && (
-    <Icon
-      name="arrowRight"
-      class="h-4 w-4 shrink-0 transition duration-300 group-hover:translate-x-1"
-    />
-  )}
 </a>

@@ -19,6 +19,8 @@ npm run dev      # 開啟預覽，網址會顯示在終端機（通常是 http:/
 | 想改的東西 | 檔案 |
 | --- | --- |
 | 網站上的文字（標題、說明、按鈕文字） | `src/copy/zh-tw.ts` |
+| 首頁最上方拍立得拼貼的照片 | `src/data_files/hero.ts`（照片放 `src/images/hero/`） |
+| 網站的配色、字體、元件規則 | `DESIGN.md`（實作在 `src/assets/styles/global.css`） |
 | 活動成果的活動、照片與連結 | `src/data_files/activities.ts`（照片放 `src/images/activities/`） |
 | 幹部名單與照片 | `src/data_files/team.ts`（照片放 `src/images/team/`） |
 | 合作夥伴 | `src/data_files/partners.ts`（標誌放 `src/images/partners/`） |

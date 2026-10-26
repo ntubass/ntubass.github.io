@@ -22,7 +22,7 @@ const { url, name, alsoActiveOn = [], home = false } = Astro.props;
   data-nav-also={alsoActiveOn.join(',')}
   data-nav-home={home ? 'true' : undefined}
   data-astro-prefetch
-  class="rounded-lg text-base font-medium text-neutral-600 ring-zinc-500 outline-hidden hover:text-neutral-500 focus-visible:ring-3 md:py-3 md:text-sm 2xl:text-base dark:text-neutral-400 dark:ring-zinc-200 dark:hover:text-neutral-500 dark:focus:outline-hidden"
+  class="rounded-full px-3.5 py-2 text-base font-bold text-neutral-700 transition-colors hover:bg-neutral-800/10 md:text-sm 2xl:text-base dark:text-neutral-300 dark:hover:bg-neutral-100/10"
 >
   {name}
 </a>
@@ -44,13 +44,19 @@ const { url, name, alsoActiveOn = [], home = false } = Astro.props;
           ? current === target
           : under(target) || also.some(under);
       if (!active) return;
+      // 目前所在頁面：墨色膠囊
       link.classList.remove(
-        'text-neutral-600',
-        'dark:text-neutral-400',
-        'hover:text-neutral-500',
-        'dark:hover:text-neutral-500'
+        'text-neutral-700',
+        'dark:text-neutral-300',
+        'hover:bg-neutral-800/10',
+        'dark:hover:bg-neutral-100/10'
       );
-      link.classList.add('text-orange-400', 'dark:text-orange-300');
+      link.classList.add(
+        'bg-neutral-800',
+        'text-neutral-100',
+        'dark:bg-neutral-100',
+        'dark:text-neutral-900'
+      );
       link.setAttribute('aria-current', 'page');
     });
   };

@@ -1,46 +1,28 @@
 ---
-import Icon from '@components/ui/icons/Icon.astro';
-
 /**
- * The call-to-action button. Renders an `<a>` when given a `url`, otherwise a
- * `<button>` (give it an `id` to wire a script to it). Any other attribute
- * (`data-astro-prefetch`, `aria-*`, …) is forwarded to the element.
+ * 主按鈕：紅底、墨色邊框加硬陰影（像貼紙，見 DESIGN.md）。給 `url` 時是 `<a>`，
+ * 否則是 `<button>`（要接 script 的話給它 `id`）。其他屬性（`data-astro-prefetch`、
+ * `aria-*` 等）會原樣傳給元素。
  */
 interface Props {
   title?: string;
   url?: string;
-  /** `orange` (default) or the yellow brand button. */
+  /** 舊的呼叫端會傳這個；現在只有一種主按鈕樣式 */
   variant?: 'orange' | 'yellow';
+  /** 舊的呼叫端會傳這個；主按鈕已經不加箭頭 */
   noArrow?: boolean;
   [attribute: string]: unknown;
 }
 
-const { title, url, variant = 'orange', noArrow, ...rest } = Astro.props;
-
-const variants = {
-  orange:
-    'text-neutral-50 bg-orange-400 hover:bg-orange-500 active:bg-orange-500',
-  yellow: 'text-neutral-800 bg-yellow-400 hover:bg-yellow-500',
-};
-
-const classes = [
-  'group inline-flex items-center justify-center gap-x-2 rounded-lg px-4 py-3 text-sm font-bold ring-zinc-500 transition duration-300 focus-visible:ring-3 outline-hidden',
-  'border border-transparent',
-  variants[variant],
-  'disabled:pointer-events-none disabled:opacity-50 dark:focus:outline-hidden',
-  '2xl:text-base',
-  'dark:ring-zinc-200',
-].join(' ');
+const { title, url, variant: _variant, noArrow: _noArrow, ...rest } = Astro.props;
 
 const Element = url ? 'a' : 'button';
 ---
 
-<Element class={classes} href={url} {...rest}>
+<Element
+  class="btn-sticker inline-flex items-center justify-center rounded-[14px] bg-orange-500 px-6 py-3.5 text-base font-black text-neutral-50 hover:bg-orange-600 disabled:pointer-events-none disabled:opacity-50"
+  href={url}
+  {...rest}
+>
   {title}
-  {noArrow ? null : (
-    <Icon
-      name="arrowRight"
-      class="h-4 w-4 shrink-0 transition duration-300 group-hover:translate-x-1"
-    />
-  )}
 </Element>

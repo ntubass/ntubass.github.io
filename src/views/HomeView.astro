@@ -8,10 +8,8 @@ import SectionHeader from '@components/ui/blocks/SectionHeader.astro';
 import FeatureGrid from '@components/ui/blocks/FeatureGrid.astro';
 import ArrowLink from '@components/ui/links/ArrowLink.astro';
 import TeamGrid from '@components/sections/about/TeamGrid.astro';
-import PageHero from '@components/sections/landing/PageHero.astro';
-import heroImage from '@images/heroes/home.jpg';
+import HomeHero from '@components/sections/landing/HomeHero.astro';
 import FAQ from '@components/sections/misc/FAQ.astro';
-import Icon from '@components/ui/icons/Icon.astro';
 import { RECRUIT } from '@data/recruit';
 import { activities } from '@data/activities';
 import { departments } from '@data/team';
@@ -22,7 +20,7 @@ import { localePath, type MarketingLocale } from '@utils/locale';
 /**
  * 首頁，區塊由上到下：
  * Hero → 系學會在做什麼（含數字）→ 我們重視的事 → 活動成果
- * → 幹部團隊 → 幹部心得 → 常見問題
+ * → 幹部團隊 → 常見問題
  */
 interface Props {
   locale: MarketingLocale;
@@ -51,24 +49,17 @@ const stats = [
     />
   )}
 
-  {/* Hero：照片在 src/images/heroes/home.jpg */}
-  <PageHero
-    title={copy.hero.title}
-    subTitle={copy.hero.subTitle}
-    image={heroImage}
-    size="lg"
-  >
-    <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-center">
-      <PrimaryCTA
-        title={copy.hero.primaryBtn}
-        url={localePath(locale, '/activities')}
-      />
-      <SecondaryCTA
-        title={copy.hero.secondaryBtn}
-        url={localePath(locale, '/about-us#recruit')}
-      />
-    </div>
-  </PageHero>
+  {/* Hero：拍立得拼貼，照片在 src/data_files/hero.ts 設定 */}
+  <HomeHero title={copy.hero.title} subTitle={copy.hero.subTitle}>
+    <PrimaryCTA
+      title={copy.hero.primaryBtn}
+      url={localePath(locale, '/activities')}
+    />
+    <SecondaryCTA
+      title={copy.hero.secondaryBtn}
+      url={localePath(locale, '/about-us#recruit')}
+    />
+  </HomeHero>
 
   {/* 系學會在做什麼 + 數字 */}
   <Section tone="muted">
@@ -149,44 +140,6 @@ const stats = [
       <ArrowLink url={localePath(locale, '/about-us')} title={copy.team.cta} />
     </SectionHeader>
     <TeamGrid compact centered />
-  </Section>
-
-  {/* 幹部心得 */}
-  <Section tone="muted">
-    <SectionHeader
-      title={copy.testimonials.title}
-      subTitle={copy.testimonials.subTitle}
-      align="center"
-    />
-    <div class="grid gap-6 md:grid-cols-3">
-      {copy.testimonials.quotes.map(quote => (
-        <figure class="flex flex-col rounded-2xl bg-neutral-50 p-6 dark:bg-neutral-800">
-          <Icon
-            name="quotation"
-            class="h-8 w-8 text-yellow-400"
-          />
-          <blockquote class="mt-4 grow text-pretty text-neutral-700 dark:text-neutral-300">
-            {quote.content}
-          </blockquote>
-          <figcaption class="mt-6 flex items-center gap-x-3">
-            <span
-              class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-yellow-400 font-bold text-neutral-800"
-              aria-hidden="true"
-            >
-              {quote.author.charAt(0)}
-            </span>
-            <span>
-              <span class="block font-bold text-neutral-800 dark:text-neutral-200">
-                {quote.author}
-              </span>
-              <span class="block text-sm text-neutral-500 dark:text-neutral-400">
-                {quote.role}
-              </span>
-            </span>
-          </figcaption>
-        </figure>
-      ))}
-    </div>
   </Section>
 
   <FAQ id="faq" title={t.faq.title} subTitle={t.faq.subTitle} faqs={t.faq.faqs} />
