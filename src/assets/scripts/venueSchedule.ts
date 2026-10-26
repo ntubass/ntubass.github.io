@@ -43,6 +43,7 @@ type Data = {
     signInHint: string;
     pendingHint: string;
     readyHint: string;
+    adminHint: string;
     submit: string;
     submitting: string;
     success: string;
@@ -56,6 +57,7 @@ type Data = {
       | 'tooFar'
       | 'tooLong'
       | 'overlap'
+      | 'wholeRoom'
       | 'failed',
       string
     >;
@@ -130,6 +132,8 @@ if (root && raw) {
   let monday = mondayOf(new Date());
 
   const canBook = () => hasRole(session, 'student');
+  // 系上同學只能借單張討論桌；整間借用（含沒有討論桌的教室）只有管理員能登記
+  const canBookWhole = () => hasRole(session, 'admin');
   const bookable = (dayIso: string) =>
     canBook() && dayIso >= todayIso && dayIso <= lastIso;
   const canRemove = (b: Booking) =>
@@ -189,7 +193,7 @@ if (root && raw) {
     table?: number | null,
     text = data.labels.free
   ) => {
-    if (!bookable(dayIso))
+    if (!bookable(dayIso) || (!table && !canBookWhole()))
       return el(
         'span',
         'block p-1 text-xs text-neutral-400 dark:text-neutral-500',
@@ -316,7 +320,7 @@ if (root && raw) {
             )
           );
           // 同一天的其他時段還是可以預約
-          if (bookable(dayIso))
+          if (bookable(dayIso) && (row.table !== undefined || canBookWhole()))
             stack.append(freeSlot(dayIso, row.venue, row.table ?? null, '+'));
           td.append(stack);
         } else {
@@ -418,9 +422,11 @@ if (root && raw) {
       show(daysHint, canBook(), 'inline');
       hint.textContent = !s
         ? data.booking.signInHint
-        : canBook()
-          ? data.booking.readyHint
-          : data.booking.pendingHint;
+        : canBookWhole()
+          ? data.booking.adminHint
+          : canBook()
+            ? data.booking.readyHint
+            : data.booking.pendingHint;
       render();
     });
     signInBtn.addEventListener('click', () => signIn());
@@ -439,10 +445,12 @@ if (root && raw) {
       o.value = String(i + 1);
       select.append(o);
     });
-    const whole = el('option', '', data.labels.wholeRoom) as HTMLOptionElement;
-    whole.value = '';
-    select.append(whole);
-    select.value = table ? String(table) : '';
+    if (canBookWhole()) {
+      const whole = el('option', '', data.labels.wholeRoom) as HTMLOptionElement;
+      whole.value = '';
+      select.append(whole);
+    }
+    select.value = table ? String(table) : canBookWhole() ? '' : '1';
   };
 
   const setError = (msg: string) => {
@@ -457,8 +465,15 @@ if (root && raw) {
   }) {
     form.reset();
     setError('');
-    const venue = prefill.venue ?? data.venues[0].id;
-    field<HTMLSelectElement>('venue').value = venue;
+    // 沒有討論桌的教室只能整間借，系上同學不能選
+    const venueSelect = field<HTMLSelectElement>('venue');
+    Array.from(venueSelect.options).forEach(o => {
+      o.disabled = !canBookWhole() && !venueOf(o.value)?.tables;
+    });
+    const venue =
+      prefill.venue ??
+      (canBookWhole() ? data.venues[0] : data.venues.find(v => v.tables))!.id;
+    venueSelect.value = venue;
     fillTables(venue, prefill.table ?? null);
     const date = field<HTMLInputElement>('date');
     date.min = todayIso;
@@ -481,6 +496,7 @@ if (root && raw) {
     const e = data.booking.errors;
     if (!b.date || !b.start || !b.end || !b.by) return e.required;
     if (b.start >= b.end) return e.order;
+    if (b.table === null && !canBookWhole()) return e.wholeRoom;
     const now = new Date();
     const nowHm = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     if (b.date < todayIso || (b.date === todayIso && b.start < nowHm))

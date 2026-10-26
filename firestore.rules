@@ -58,8 +58,10 @@ service cloud.firestore {
       // 借用狀況大家都看得到
       allow read: if true;
 
+      // 系上同學只能借單張討論桌（table 是 1、2、3…）；整間借用（table 為 null）只有管理員能登記
       function validEntry(b) {
         return b.keys().hasOnly(['table', 'start', 'end', 'by', 'purpose', 'uid', 'name', 'createdAt'])
+          && (isAdmin() || (b.table is int && b.table >= 1))
           && b.uid == request.auth.uid
           && b.start is string && b.end is string && b.start < b.end
           && b.by is string && b.by.size() > 0 && b.by.size() <= 30
