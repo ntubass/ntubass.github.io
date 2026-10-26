@@ -30,49 +30,50 @@ export const departments: Department[] = [
     name: '正副會長',
     description: '統籌系學會整體方向、對外合作，並協調各部門運作。',
     members: [
-      { name: '王小明', title: '會長' },
-      { name: '林小華', title: '副會長' },
+      { name: '陳宥均', title: '會長', photo: '陳宥均.jpg' },
+      { name: '劉翔安', title: '副會長', photo: '劉翔安.jpg' },
     ],
   },
   {
     name: '財務部',
     description: '管理系學會經費與活動預算，處理報帳與贊助款項。',
     members: [
-      { name: '陳大同', title: '財務部長' },
-      { name: '李小美', title: '財務部員' },
+      { name: '林之云', title: '財務部長', photo: '林之云.jpg' },
     ],
   },
   {
     name: '行政部',
     description: '負責系上教研教室的借用登記、文件與會議紀錄，讓系學會順利運作。',
     members: [
-      { name: '張家豪', title: '行政部長' },
-      { name: '黃宜庭', title: '行政部員' },
+      { name: '周愈軒', title: '行政部長', photo: '周愈軒.jpg' },
+      { name: '林子曦', title: '行政部長', photo: '林子曦.jpg' },
     ],
   },
   {
     name: '學術部',
     description: '籌辦職涯講座與訪談，整理各領域的學習與職涯資源。',
     members: [
-      { name: '吳承恩', title: '學術部長' },
-      { name: '劉怡君', title: '學術部員' },
-      { name: '蔡宗翰', title: '學術部員' },
+      { name: '葉翊廷', title: '學術部長', photo: '葉翊廷.jpg' },
+      { name: '岳楷翔', title: '學術部長', photo: '岳楷翔.jpg' },
+      { name: '崔珈瑄', title: '學術部長', photo: '崔珈瑄.jpg' },
     ],
   },
   {
     name: '活動部',
     description: '籌辦迎新、宿營、系烤、之夜等系上活動。',
     members: [
-      { name: '楊雅婷', title: '活動部長' },
-      { name: '許志明', title: '活動部員' },
+      { name: '王廷宇', title: '活動部長', photo: '王廷宇.jpg' },
+      { name: '楊芷淵', title: '活動部長', photo: '楊芷淵.jpg' },
+      { name: '吳孟蓁', title: '活動部長', photo: '吳孟蓁.jpg' },
     ],
   },
   {
     name: '行銷部',
     description: '經營系學會 IG 等社群、設計視覺素材，並負責活動與招募宣傳。',
     members: [
-      { name: '鄭佳穎', title: '行銷部長' },
-      { name: '謝承翰', title: '行銷部員' },
+      { name: '胡詠涵', title: '行銷部長', photo: '胡詠涵.jpg' },
+      { name: '吳宇薇', title: '行銷部長', photo: '吳宇薇.jpg' },
+      { name: '鄭清蔚', title: '行銷部長', photo: '鄭清蔚.jpg' },
     ],
   },
 ];
