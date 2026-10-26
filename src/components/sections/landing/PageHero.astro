@@ -3,8 +3,7 @@ import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 
 /**
- * 頁面開頭的大橫幅（首頁與各內頁共用）：背景照片 + 由下往上的深色漸層，
- * 標題靠左、貼近底部，像刊物封面。
+ * 頁面開頭的大橫幅（首頁與各內頁共用）：背景照片 + 暖色漸層遮罩，標題置中、白字。
  * default slot 放在說明文字下方（按鈕、分頁按鈕等）。
  *
  * - `image`：背景照片。照片放在 `src/images/heroes/`，在 view 裡 import 後傳進來。
@@ -25,9 +24,9 @@ const isLarge = size === 'lg';
 
 <section
   class:list={[
-    'relative isolate mx-auto mt-6 flex max-w-[85rem] flex-col items-start justify-end overflow-hidden rounded-[2rem] px-6 text-left sm:px-12 lg:px-16 2xl:max-w-full',
-    isLarge ? 'min-h-[82svh] pt-32 pb-14 lg:pb-20' : 'min-h-[48svh] pt-28 pb-12 lg:pb-16',
-    !image && 'bg-linear-to-br from-yellow-300 via-yellow-400 to-yellow-500',
+    'relative isolate mx-auto mt-6 flex max-w-[85rem] flex-col items-center justify-center overflow-hidden rounded-3xl px-6 text-center sm:px-10 2xl:max-w-full',
+    isLarge ? 'min-h-[75svh] py-24' : 'min-h-[52svh] py-20',
+    !image && 'bg-linear-to-br from-yellow-300 via-yellow-400 to-orange-400',
   ]}
 >
   {image && (
@@ -41,13 +40,13 @@ const isLarge = size === 'lg';
         widths={[640, 1024, 1600, 2000]}
         sizes="(min-width: 1360px) 1360px, 100vw"
       />
-      {/* 遮罩：底部與左側較深，讓左下角的白字清楚；上方保留照片原本的樣子 */}
+      {/* 遮罩：上淺下深的暗色漸層，再疊一層淡淡的暖色，讓照片和網站的黃橘色調一致 */}
       <div
-        class="absolute inset-0 -z-10 bg-linear-to-t from-neutral-950/90 via-neutral-950/45 to-neutral-950/5"
+        class="absolute inset-0 -z-10 bg-linear-to-b from-neutral-900/35 via-neutral-900/55 to-neutral-900/80"
         aria-hidden="true"
       />
       <div
-        class="absolute inset-0 -z-10 bg-linear-to-r from-neutral-950/55 via-neutral-950/10 to-transparent"
+        class="absolute inset-0 -z-10 bg-linear-to-tr from-orange-500/25 via-transparent to-yellow-400/20 mix-blend-multiply"
         aria-hidden="true"
       />
     </>
@@ -55,10 +54,10 @@ const isLarge = size === 'lg';
 
   <h1
     class:list={[
-      'max-w-4xl leading-[1.08] tracking-[-0.02em]',
+      'max-w-4xl font-bold tracking-tight text-balance drop-shadow-sm',
       isLarge
-        ? 'text-[2.05rem] sm:text-6xl lg:text-[5.25rem]'
-        : 'text-4xl sm:text-5xl lg:text-6xl',
+        ? 'text-3xl sm:text-5xl lg:text-6xl lg:leading-tight'
+        : 'text-3xl sm:text-4xl lg:text-5xl lg:leading-tight',
       image ? 'text-neutral-50' : 'text-neutral-800',
     ]}
   >
@@ -66,7 +65,7 @@ const isLarge = size === 'lg';
   </h1>
   <span
     class:list={[
-      'order-first mb-6 block h-1 w-12 rounded-full',
+      'mt-5 block h-1 w-16 rounded-full',
       image ? 'bg-yellow-400' : 'bg-neutral-800/70',
     ]}
     aria-hidden="true"
@@ -74,15 +73,15 @@ const isLarge = size === 'lg';
   {subTitle && (
     <p
       class:list={[
-        'mt-6 max-w-xl text-base leading-relaxed sm:text-lg',
-        image ? 'text-neutral-200' : 'text-neutral-800/80',
+        'mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-pretty',
+        image ? 'text-neutral-100' : 'text-neutral-800/80',
       ]}
     >
       {subTitle}
     </p>
   )}
   {Astro.slots.has('default') && (
-    <div class="mt-9 flex w-full justify-start">
+    <div class="mt-8 flex w-full justify-center">
       <slot />
     </div>
   )}

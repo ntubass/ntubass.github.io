@@ -5,6 +5,7 @@ import PrimaryCTA from '@components/ui/buttons/PrimaryCTA.astro';
 import SecondaryCTA from '@components/ui/buttons/SecondaryCTA.astro';
 import Section from '@components/ui/blocks/Section.astro';
 import SectionHeader from '@components/ui/blocks/SectionHeader.astro';
+import FeatureGrid from '@components/ui/blocks/FeatureGrid.astro';
 import ArrowLink from '@components/ui/links/ArrowLink.astro';
 import TeamGrid from '@components/sections/about/TeamGrid.astro';
 import PageHero from '@components/sections/landing/PageHero.astro';
@@ -69,94 +70,66 @@ const stats = [
     </div>
   </PageHero>
 
-  {/* 系學會在做什麼 + 數字：左邊是介紹，右邊是 2×2 的大數字 */}
+  {/* 系學會在做什麼 + 數字 */}
   <Section tone="muted">
-    <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
-      <div class="lg:col-span-6">
-        <SectionHeader title={copy.mission.title} />
-        <p class="-mt-4 max-w-xl text-lg leading-[1.9] text-neutral-700 dark:text-neutral-300">
-          {copy.mission.body}
-        </p>
-      </div>
-      <dl class="grid grid-cols-2 self-end lg:col-span-6">
-        {stats.map((stat, i) => (
-          <div
-            class:list={[
-              'flex flex-col gap-2 border-neutral-300 py-7 dark:border-neutral-700',
-              i % 2 === 1 && 'border-l ps-6 sm:ps-10',
-              i < 2 && 'border-b',
-            ]}
-          >
-            <dt class="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+    <div class="mx-auto max-w-3xl text-center">
+      <SectionHeader title={copy.mission.title} align="center" />
+      <p class="-mt-4 text-lg leading-relaxed text-pretty text-neutral-700 dark:text-neutral-300">
+        {copy.mission.body}
+      </p>
+    </div>
+    <dl class="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {stats.map(stat => (
+          <div class="flex flex-col rounded-2xl bg-neutral-50 p-6 text-center dark:bg-neutral-800">
+            <dt class="text-sm text-neutral-600 dark:text-neutral-400">
               {stat.label}
             </dt>
-            <dd class="num order-first text-6xl font-extrabold text-neutral-900 lg:text-7xl dark:text-neutral-50">
+            <dd class="order-first text-3xl font-bold text-orange-400 lg:text-4xl dark:text-orange-300">
               {stat.value}
             </dd>
           </div>
         ))}
-      </dl>
-    </div>
+    </dl>
   </Section>
 
-  {/* 我們重視的事：左邊標題固定，右邊是編號清單 */}
+  {/* 我們重視的事 */}
   <Section>
-    <div class="grid gap-10 lg:grid-cols-12 lg:gap-16">
-      <div class="lg:col-span-4">
-        <div class="lg:sticky lg:top-28">
-          <SectionHeader
-            title={copy.values.title}
-            subTitle={copy.values.subTitle}
-          />
-        </div>
-      </div>
-      <ol class="lg:col-span-8">
-        {copy.values.items.map((item, i) => (
-          <li class="group grid grid-cols-[auto_1fr] gap-x-6 border-t border-neutral-300 py-8 first:border-t-0 first:pt-0 sm:gap-x-10 dark:border-neutral-800">
-            <span class="num text-5xl font-extrabold text-yellow-400 transition-transform duration-300 group-hover:-translate-y-1 sm:text-6xl">
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <div class="pt-1">
-              <h3 class="flex items-center gap-x-3 text-2xl text-neutral-900 sm:text-3xl dark:text-neutral-50">
-                <Icon name={item.icon} class="h-6 w-6 text-orange-500 dark:text-orange-300" />
-                {item.title}
-              </h3>
-              <p class="mt-3 max-w-xl leading-[1.85] text-neutral-600 dark:text-neutral-400">
-                {item.description}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </div>
+    <SectionHeader
+      title={copy.values.title}
+      subTitle={copy.values.subTitle}
+      align="center"
+    />
+    <FeatureGrid items={copy.values.items} align="center" />
   </Section>
 
-  {/* 活動成果：一條橫向時間軸，每個活動一個點 */}
+  {/* 活動成果 */}
   {activities.length > 0 && (
     <Section tone="muted">
-      <SectionHeader title={copy.events.title} subTitle={copy.events.subTitle}>
+      <SectionHeader
+        title={copy.events.title}
+        subTitle={copy.events.subTitle}
+        align="center"
+      >
         <ArrowLink
           url={localePath(locale, '/activities')}
           title={copy.events.cta}
         />
       </SectionHeader>
-      <ol class="relative grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-4 lg:grid-cols-7 lg:gap-y-0">
-        {/* 時間軸的線（只在電腦版一整排時顯示） */}
-        <span
-          class="absolute inset-x-0 top-[0.4375rem] hidden h-px bg-neutral-400/60 lg:block dark:bg-neutral-700"
-          aria-hidden="true"
-        />
-        {activities.map(activity => (
-          <li class="relative">
+      {/* 精簡版時間軸：每個活動一格，點了跳到活動成果頁的那個活動 */}
+      <ol class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
+        {activities.map((activity, i) => (
+          <li>
             <a
               href={localePath(locale, `/activities#${activity.id}`)}
-              class="group block rounded-xl pe-2"
+              class="group block h-full rounded-2xl border border-neutral-300/60 bg-neutral-50 p-4 text-center transition hover:-translate-y-1 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-900/50"
             >
-              <span class="relative block h-3.5 w-3.5 rounded-full border-[3px] border-neutral-200 bg-yellow-400 transition-transform duration-300 group-hover:scale-125 dark:border-neutral-900" />
-              <span class="num mt-5 block text-sm font-semibold text-orange-500 dark:text-orange-300">
+              <span class="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-yellow-400 text-sm font-bold text-neutral-800">
+                {i + 1}
+              </span>
+              <span class="mt-2 block text-xs font-semibold text-orange-400 dark:text-orange-300">
                 {activity.time}
               </span>
-              <span class="mt-1 block font-serif text-xl font-black text-neutral-900 transition-colors group-hover:text-orange-500 dark:text-neutral-50 dark:group-hover:text-orange-300">
+              <span class="mt-1 block font-bold text-neutral-800 group-hover:text-orange-400 dark:text-neutral-200 dark:group-hover:text-orange-300">
                 {activity.name}
               </span>
             </a>
@@ -168,62 +141,45 @@ const stats = [
 
   {/* 幹部團隊 */}
   <Section>
-    <SectionHeader title={copy.team.title} subTitle={copy.team.subTitle}>
+    <SectionHeader
+      title={copy.team.title}
+      subTitle={copy.team.subTitle}
+      align="center"
+    >
       <ArrowLink url={localePath(locale, '/about-us')} title={copy.team.cta} />
     </SectionHeader>
-    <TeamGrid compact />
+    <TeamGrid compact centered />
   </Section>
 
-  {/* 幹部心得：第一則放大當主角，其他兩則疊在右邊 */}
+  {/* 幹部心得 */}
   <Section tone="muted">
     <SectionHeader
       title={copy.testimonials.title}
       subTitle={copy.testimonials.subTitle}
+      align="center"
     />
-    <div class="grid gap-6 lg:grid-cols-12">
-      {copy.testimonials.quotes.map((quote, i) => (
-        <figure
-          class:list={[
-            'flex flex-col rounded-[1.5rem]',
-            i === 0
-              ? 'bg-neutral-900 p-8 text-neutral-50 sm:p-12 lg:col-span-7 lg:row-span-2 dark:bg-neutral-50 dark:text-neutral-900'
-              : 'bg-neutral-50 p-7 lg:col-span-5 dark:bg-neutral-800',
-          ]}
-        >
+    <div class="grid gap-6 md:grid-cols-3">
+      {copy.testimonials.quotes.map(quote => (
+        <figure class="flex flex-col rounded-2xl bg-neutral-50 p-6 dark:bg-neutral-800">
           <Icon
             name="quotation"
-            class:list={[
-              'text-yellow-400',
-              i === 0 ? 'h-10 w-10' : 'h-7 w-7',
-            ]}
+            class="h-8 w-8 text-yellow-400"
           />
-          <blockquote
-            class:list={[
-              'mt-5 grow',
-              i === 0
-                ? 'font-serif text-2xl leading-[1.6] font-semibold sm:text-[1.75rem]'
-                : 'leading-[1.85] text-neutral-700 dark:text-neutral-300',
-            ]}
-          >
+          <blockquote class="mt-4 grow text-pretty text-neutral-700 dark:text-neutral-300">
             {quote.content}
           </blockquote>
-          <figcaption class="mt-8 flex items-center gap-x-3">
+          <figcaption class="mt-6 flex items-center gap-x-3">
             <span
-              class="inline-flex h-11 w-11 items-center justify-center rounded-[14px] bg-yellow-400 font-serif font-black text-neutral-900"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-yellow-400 font-bold text-neutral-800"
               aria-hidden="true"
             >
               {quote.author.charAt(0)}
             </span>
             <span>
-              <span class="block font-bold">{quote.author}</span>
-              <span
-                class:list={[
-                  'block text-sm',
-                  i === 0
-                    ? 'text-neutral-400 dark:text-neutral-600'
-                    : 'text-neutral-500 dark:text-neutral-400',
-                ]}
-              >
+              <span class="block font-bold text-neutral-800 dark:text-neutral-200">
+                {quote.author}
+              </span>
+              <span class="block text-sm text-neutral-500 dark:text-neutral-400">
                 {quote.role}
               </span>
             </span>
