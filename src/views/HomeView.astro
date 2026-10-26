@@ -1,8 +1,6 @@
 ---
 import MainLayout from '@/layouts/MainLayout.astro';
-import AnnouncementBanner from '@components/ui/banners/AnnouncementBanner.astro';
 import PrimaryCTA from '@components/ui/buttons/PrimaryCTA.astro';
-import SecondaryCTA from '@components/ui/buttons/SecondaryCTA.astro';
 import Section from '@components/ui/blocks/Section.astro';
 import SectionHeader from '@components/ui/blocks/SectionHeader.astro';
 import FeatureGrid from '@components/ui/blocks/FeatureGrid.astro';
@@ -10,7 +8,6 @@ import ArrowLink from '@components/ui/links/ArrowLink.astro';
 import TeamGrid from '@components/sections/about/TeamGrid.astro';
 import HomeHero from '@components/sections/landing/HomeHero.astro';
 import FAQ from '@components/sections/misc/FAQ.astro';
-import { RECRUIT } from '@data/recruit';
 import { activities } from '@data/activities';
 import { departments } from '@data/team';
 import { venues } from '@data/venues';
@@ -40,24 +37,11 @@ const stats = [
 ---
 
 <MainLayout>
-  {RECRUIT.isOpen && (
-    <AnnouncementBanner
-      btnId="recruit-banner-dismiss"
-      title={copy.banner.text}
-      btnTitle={copy.banner.btn}
-      url={localePath(locale, '/about-us#recruit')}
-    />
-  )}
-
   {/* Hero：拍立得拼貼，照片在 src/data_files/hero.ts 設定 */}
   <HomeHero title={copy.hero.title} subTitle={copy.hero.subTitle}>
     <PrimaryCTA
       title={copy.hero.primaryBtn}
       url={localePath(locale, '/activities')}
-    />
-    <SecondaryCTA
-      title={copy.hero.secondaryBtn}
-      url={localePath(locale, '/about-us#recruit')}
     />
   </HomeHero>
 

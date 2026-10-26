@@ -69,7 +69,7 @@ export const departments: Department[] = [
   },
   {
     name: '行銷部',
-    description: '經營系學會 IG 等社群、設計視覺素材，並負責活動與招募宣傳。',
+    description: '經營系學會 IG 等社群、設計視覺素材，並負責活動宣傳。',
     members: [
       { name: '胡詠涵', title: '行銷部長', photo: '胡詠涵.jpg' },
       { name: '吳宇薇', title: '行銷部長', photo: '吳宇薇.jpg' },

@@ -6,15 +6,14 @@ import Section from '@components/ui/blocks/Section.astro';
 import SectionHeader from '@components/ui/blocks/SectionHeader.astro';
 import Timeline from '@components/ui/blocks/Timeline.astro';
 import TeamGrid from '@components/sections/about/TeamGrid.astro';
-import RecruitSection from '@components/sections/about/RecruitSection.astro';
 import Icon from '@components/ui/icons/Icon.astro';
 import { SITE } from '@data/constants';
 import { getCopy } from '@/copy';
 import type { MarketingLocale } from '@utils/locale';
 
 /**
- * 關於我們：我們是誰 & 系學會的一年 → 現任幹部 → 聯絡我們 → 加入系學會（#recruit）。
- * 招募資訊的內容在 `RecruitSection`。
+ * 關於我們：我們是誰 & 系學會的一年 → 現任幹部 → 聯絡我們。
+ * 幹部招募目前不顯示；要恢復時把 `RecruitSection` 放回聯絡我們下面（見 src/data_files/recruit.ts）。
  */
 interface Props {
   locale: MarketingLocale;
@@ -75,5 +74,4 @@ const history = copy.history.items.map(item => ({
     </div>
   </Section>
 
-  <RecruitSection />
 </MainLayout>

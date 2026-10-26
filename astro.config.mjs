@@ -20,8 +20,6 @@ export default defineConfig({
   // 沒有獨立頁面的網址，轉到對應的區塊（目的地要加上子路徑）
   redirects: {
     '/interviews': `${BASE}/career#interviews`,
-    // 招募資訊已移到「關於我們」最下面
-    '/recruit': `${BASE}/about-us#recruit`,
   },
   prefetch: true,
   // 管理後台不放進 sitemap

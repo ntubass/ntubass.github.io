@@ -26,7 +26,7 @@ npm run dev      # 開啟預覽，網址會顯示在終端機（通常是 http:/
 | 合作夥伴 | `src/data_files/partners.ts`（標誌放 `src/images/partners/`） |
 | 場地借用的教室 | `src/data_files/venues.ts`（借用紀錄存在 Firebase，同學在網站上直接預約） |
 | Google 登入、線上預約、角色權限 | `src/data_files/firebase.ts`、`firestore.rules`（設定步驟見 `FIREBASE.md`） |
-| 幹部招募 | `src/data_files/recruit.ts` |
+| 幹部招募（目前不顯示） | `src/data_files/recruit.ts`、`src/components/sections/about/RecruitSection.astro` |
 | 學習資源（每篇一個 Markdown 檔） | `src/content/resources/zh-tw/` |
 | 職涯訪談（每篇一個 Markdown 檔） | `src/content/interviews/zh-tw/` |
 | 導覽列與社群連結 | `src/data_files/navigation.ts` |

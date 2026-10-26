@@ -14,7 +14,6 @@ const ROUTES = [
   '/interviews/2026-pm-chen/',
   '/interviews/',
   '/activities/',
-  '/recruit/',
   '/about-us/',
   '/admin/',
   '/404',
@@ -31,8 +30,7 @@ const EXPECTATIONS = {
   '/admin/': ['data-admin-rows'],
   '/interviews/2026-pm-chen/': ['"@type":"Article"', 'interview-body'],
   '/interviews/': ['/career#interviews'],
-  '/about-us/': ['id="team"', 'id="recruit"', '<details'],
-  '/recruit/': ['/about-us#recruit'],
+  '/about-us/': ['id="team"'],
   '/activities/': ['id="welcome"', 'id="key"', '管理之鑰'],
 };
 
