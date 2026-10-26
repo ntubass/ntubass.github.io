@@ -4,7 +4,7 @@ import { localePath } from '@utils/locale';
 
 /**
  * 導覽列右上角的 Google 登入：沒登入時是「登入」按鈕，登入後顯示頭像、名字與角色，
- * 點開有「管理後台」（管理員才有）和「登出」。Firebase 還沒設定時整塊不顯示。
+ * 點開有「個人資料」、「管理後台」（超級管理員才有）和「登出」。Firebase 還沒設定時整塊不顯示。
  * 登入邏輯在 `@scripts/auth`。
  */
 const { locale, copy: t } = Astro.locals;
@@ -47,6 +47,13 @@ const labels = { roles: t.auth.roles };
     role="menu"
     data-auth-dropdown
   >
+    <a
+      href={localePath(locale, '/profile')}
+      class="block px-4 py-2 text-sm text-neutral-700 hover:bg-yellow-400/20 dark:text-neutral-300 dark:hover:bg-neutral-700"
+      role="menuitem"
+    >
+      {t.auth.profile}
+    </a>
     <a
       href={localePath(locale, '/admin')}
       class="hidden px-4 py-2 text-sm text-neutral-700 hover:bg-yellow-400/20 dark:text-neutral-300 dark:hover:bg-neutral-700"
@@ -101,7 +108,7 @@ const labels = { roles: t.auth.roles };
       if (user.photoURL) photo.src = user.photoURL;
       q('[data-auth-name]').textContent = user.displayName ?? user.email ?? '';
       q('[data-auth-role]').textContent = labels.roles[role];
-      show(adminLink, hasRole(session, 'admin'), 'block');
+      show(adminLink, hasRole(session, 'super'), 'block');
     });
 
     signInBtn.addEventListener('click', () => signIn());

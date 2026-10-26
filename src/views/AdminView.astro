@@ -6,9 +6,10 @@ import { getCopy } from '@/copy';
 import type { MarketingLocale } from '@utils/locale';
 
 /**
- * 管理後台：列出所有登入過的人，管理員可以把人設成「一般」或「系上同學」，
- * 超級管理員還可以任命或取消管理員。不在導覽列上，也不會出現在 sitemap。
- * 真正的權限檢查在 firestore.rules，這個頁面只是操作介面。
+ * 管理後台（只有超級管理員）：
+ * 1. 待審核的申請：看同學填的資料與學生證照片，核准為系上同學或退回（照片會一起刪除）
+ * 2. 所有使用者：設定角色（一般／系上同學／管理員）；超級管理員本身只能在 Firebase 主控台設定
+ * 不在導覽列上，也不會出現在 sitemap。真正的權限檢查在 firestore.rules，這個頁面只是操作介面。
  */
 interface Props {
   locale: MarketingLocale;
@@ -25,49 +26,76 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
 
     <div data-admin data-labels={JSON.stringify(labels)}>
       <p
-        class="rounded-2xl bg-neutral-50 p-6 text-neutral-600 dark:bg-neutral-900/60 dark:text-neutral-400"
+        class="rounded-md bg-neutral-50 p-6 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
         data-admin-message
       >
         {copy.admin.notConfigured}
       </p>
 
-      <div class="hidden" data-admin-panel>
-        <div class="mb-4 flex flex-wrap items-center gap-3">
-          <input
-            type="search"
-            class="w-full max-w-xs rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
-            placeholder={copy.admin.search}
-            data-admin-search
-          />
-          <div class="flex flex-wrap gap-2" data-admin-filters></div>
-        </div>
+      <div class="hidden space-y-14" data-admin-panel>
+        {/* 待審核的申請 */}
+        <section>
+          <h2 class="mb-5 flex items-center gap-3 text-2xl font-black text-neutral-800 dark:text-neutral-100">
+            {copy.admin.pendingTitle}
+            <span
+              class="rounded-full bg-orange-500 px-2.5 py-0.5 text-sm text-neutral-50"
+              data-pending-count
+            ></span>
+          </h2>
+          <div class="grid gap-6 lg:grid-cols-2" data-pending-list></div>
+        </section>
 
-        <div class="overflow-x-auto rounded-2xl border border-neutral-300/60 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900/60">
-          <table class="w-full min-w-[40rem] text-left text-sm">
-            <thead class="border-b border-neutral-300/60 text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
-              <tr>
-                <th class="p-3 font-semibold">{copy.admin.name}</th>
-                <th class="p-3 font-semibold">{copy.admin.email}</th>
-                <th class="p-3 font-semibold">{copy.admin.joined}</th>
-                <th class="p-3 font-semibold">{copy.admin.role}</th>
-              </tr>
-            </thead>
-            <tbody
-              class="text-neutral-800 dark:text-neutral-200"
-              data-admin-rows
-            >
-            </tbody>
-          </table>
-        </div>
+        {/* 所有使用者 */}
+        <section>
+          <h2 class="mb-5 text-2xl font-black text-neutral-800 dark:text-neutral-100">
+            {copy.admin.usersTitle}
+          </h2>
+          <div class="mb-4 flex flex-wrap items-center gap-3">
+            <input
+              type="search"
+              class="w-full max-w-xs rounded-xl border-2 border-neutral-300 bg-white px-4 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
+              placeholder={copy.admin.search}
+              data-admin-search
+            />
+            <div class="flex flex-wrap gap-2" data-admin-filters></div>
+          </div>
+
+          <div class="overflow-x-auto rounded-md bg-neutral-50 shadow-[0_12px_24px_-12px_rgb(60_45_30/0.45)] dark:bg-neutral-800">
+            <table class="w-full min-w-[40rem] text-left text-sm">
+              <thead class="border-b border-neutral-300 text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+                <tr>
+                  <th class="p-3 font-bold">{copy.admin.name}</th>
+                  <th class="p-3 font-bold">{copy.admin.email}</th>
+                  <th class="p-3 font-bold">{copy.admin.joined}</th>
+                  <th class="p-3 font-bold">{copy.admin.role}</th>
+                </tr>
+              </thead>
+              <tbody class="text-neutral-800 dark:text-neutral-200" data-admin-rows></tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </div>
+
+    {/* 學生證照片放大 */}
+    <dialog
+      class="photo-dialog m-auto max-h-[90vh] max-w-[min(56rem,94vw)] bg-transparent p-0"
+      data-photo-dialog
+    >
+      <form method="dialog" class="polaroid p-3 pb-3">
+        <img class="max-h-[80vh] w-auto" alt={copy.admin.photoAlt} data-photo-full />
+        <button class="absolute -top-3 -right-3 grid h-9 w-9 place-items-center rounded-full bg-neutral-800 text-lg font-black text-neutral-50" aria-label="關閉">
+          ×
+        </button>
+      </form>
+    </dialog>
 
     <div
       class="pointer-events-none fixed inset-x-0 bottom-6 z-100 flex justify-center px-4"
       aria-live="polite"
     >
       <p
-        class="hidden rounded-full bg-neutral-800 px-5 py-2.5 text-sm font-semibold text-neutral-50 shadow-lg dark:bg-neutral-100 dark:text-neutral-800"
+        class="hidden rounded-full bg-neutral-800 px-5 py-2.5 text-sm font-bold text-neutral-50 shadow-lg dark:bg-neutral-100 dark:text-neutral-900"
         data-admin-toast
       >
       </p>
@@ -75,9 +103,21 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
   </Section>
 </MainLayout>
 
+<style>
+  .photo-dialog::backdrop {
+    background: rgb(20 16 14 / 0.6);
+  }
+</style>
+
 <script>
   import { hasRole, isEnabled, watchSession } from '@scripts/auth';
   import { setUserRole, watchUsers, type UserRow } from '@scripts/users';
+  import {
+    approveApplication,
+    rejectApplication,
+    watchPendingApplications,
+    type Application,
+  } from '@scripts/applications';
   import { ROLE_RANK, type Role } from '@data/firebase';
 
   type Labels = {
@@ -88,18 +128,35 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
     empty: string;
     saved: string;
     saveFailed: string;
+    pendingEmpty: string;
+    email: string;
+    phone: string;
+    studentId: string;
+    submittedAt: string;
+    approve: string;
+    reject: string;
+    rejectPrompt: string;
+    approved: string;
+    rejected: string;
+    photoAlt: string;
     roles: Record<Role, string>;
   };
 
   const root = document.querySelector<HTMLElement>('[data-admin]');
   if (root && isEnabled) {
     const labels: Labels = JSON.parse(root.dataset.labels!);
-    const message = root.querySelector<HTMLElement>('[data-admin-message]')!;
-    const panel = root.querySelector<HTMLElement>('[data-admin-panel]')!;
-    const rowsEl = root.querySelector<HTMLElement>('[data-admin-rows]')!;
-    const search = root.querySelector<HTMLInputElement>('[data-admin-search]')!;
-    const filters = root.querySelector<HTMLElement>('[data-admin-filters]')!;
-    const toastEl = document.querySelector<HTMLElement>('[data-admin-toast]')!;
+    const $ = <T extends HTMLElement = HTMLElement>(sel: string) =>
+      document.querySelector<T>(sel)!;
+    const message = $('[data-admin-message]');
+    const panel = $('[data-admin-panel]');
+    const rowsEl = $('[data-admin-rows]');
+    const search = $<HTMLInputElement>('[data-admin-search]');
+    const filters = $('[data-admin-filters]');
+    const pendingList = $('[data-pending-list]');
+    const pendingCount = $('[data-pending-count]');
+    const dialog = $<HTMLDialogElement>('[data-photo-dialog]');
+    const fullPhoto = $<HTMLImageElement>('[data-photo-full]');
+    const toastEl = $('[data-admin-toast]');
     const roles = Object.keys(ROLE_RANK) as Role[];
     message.textContent = labels.signInFirst;
 
@@ -114,23 +171,103 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
       toastEl.textContent = text;
       toastEl.classList.remove('hidden');
       clearTimeout(toastTimer);
-      toastTimer = window.setTimeout(() => toastEl.classList.add('hidden'), 2500);
+      toastTimer = window.setTimeout(() => toastEl.classList.add('hidden'), 2800);
     };
 
-    let me: { uid: string; role: Role } | null = null;
+    let me = '';
     let users: UserRow[] = [];
     let filter: Role | 'all' = 'all';
-    let stopUsers: (() => void) | null = null;
+    let stops: (() => void)[] = [];
 
-    // 我可以把別人設成哪些角色：管理員只能在一般／系上同學之間切換，
-    // 超級管理員還可以任命管理員；超級管理員本身只能在 Firebase 主控台設定
-    const assignable = (target: Role): Role[] => {
-      if (!me || target === 'super') return [];
-      if (me.role === 'super') return ['member', 'student', 'admin'];
-      if (me.role === 'admin' && ROLE_RANK[target] < ROLE_RANK.admin)
-        return ['member', 'student'];
-      return [];
+    // --- 待審核的申請 ---
+    const renderPending = (apps: Application[]) => {
+      pendingCount.textContent = String(apps.length);
+      pendingCount.hidden = !apps.length;
+      pendingList.replaceChildren();
+      if (!apps.length) {
+        pendingList.append(
+          el('p', 'text-neutral-600 dark:text-neutral-400', labels.pendingEmpty)
+        );
+        return;
+      }
+      apps.forEach(app => {
+        const card = el(
+          'article',
+          'flex flex-col gap-5 rounded-md bg-neutral-50 p-5 shadow-[0_12px_24px_-12px_rgb(60_45_30/0.45)] sm:flex-row dark:bg-neutral-800'
+        );
+        // 學生證照片：點了放大
+        const thumb = el(
+          'button',
+          'polaroid shrink-0 self-start p-2 pb-2 transition-transform hover:-rotate-1 sm:w-48'
+        );
+        thumb.setAttribute('type', 'button');
+        thumb.setAttribute('aria-label', labels.photoAlt);
+        const img = el('img', 'aspect-[4/3] w-full object-cover') as HTMLImageElement;
+        img.src = app.photo;
+        img.alt = labels.photoAlt;
+        thumb.append(img);
+        thumb.addEventListener('click', () => {
+          fullPhoto.src = app.photo;
+          dialog.showModal();
+        });
+
+        const info = el('div', 'min-w-0 grow');
+        info.append(
+          el('h3', 'text-xl font-black text-neutral-800 dark:text-neutral-100', app.name)
+        );
+        const dl = el('dl', 'mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm');
+        [
+          [labels.studentId, app.studentId],
+          [labels.phone, app.phone],
+          [labels.email, app.email],
+          [labels.submittedAt, app.submittedAt?.toLocaleString('zh-TW') ?? ''],
+        ].forEach(([k, v]) => {
+          dl.append(el('dt', 'font-bold text-neutral-500 dark:text-neutral-400', k));
+          dl.append(el('dd', 'break-all text-neutral-800 dark:text-neutral-200', v));
+        });
+        info.append(dl);
+
+        const actions = el('div', 'mt-5 flex flex-wrap gap-3');
+        const approve = el(
+          'button',
+          'btn-sticker rounded-xl bg-neutral-800 px-4 py-2 text-sm font-black text-neutral-50 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900',
+          labels.approve
+        ) as HTMLButtonElement;
+        const reject = el(
+          'button',
+          'btn-sticker rounded-xl bg-neutral-50 px-4 py-2 text-sm font-black text-orange-600 disabled:opacity-60',
+          labels.reject
+        ) as HTMLButtonElement;
+        approve.type = reject.type = 'button';
+        const act = async (fn: () => Promise<void>, done: string) => {
+          approve.disabled = reject.disabled = true;
+          try {
+            await fn();
+            toast(done);
+          } catch (err) {
+            console.error(err);
+            toast(labels.saveFailed);
+            approve.disabled = reject.disabled = false;
+          }
+        };
+        approve.addEventListener('click', () =>
+          act(() => approveApplication(app.uid), labels.approved)
+        );
+        reject.addEventListener('click', () => {
+          const note = prompt(labels.rejectPrompt)?.trim();
+          if (note) act(() => rejectApplication(app.uid, note), labels.rejected);
+        });
+        actions.append(approve, reject);
+        info.append(actions);
+
+        card.append(thumb, info);
+        pendingList.append(card);
+      });
     };
+
+    // --- 所有使用者：超級管理員可以在一般／系上同學／管理員之間設定 ---
+    const assignable = (target: Role): Role[] =>
+      target === 'super' ? [] : ['member', 'student', 'admin'];
 
     const renderFilters = () => {
       filters.replaceChildren();
@@ -139,19 +276,19 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
           r === 'all' ? users.length : users.filter(u => u.role === r).length;
         const btn = el(
           'button',
-          `rounded-full px-3 py-1.5 text-xs font-bold transition ${filter === r ? 'bg-yellow-400 text-neutral-800' : 'bg-neutral-200 text-neutral-600 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-300'}`,
+          `rounded-full px-3 py-1.5 text-xs font-bold transition ${filter === r ? 'bg-neutral-800 text-neutral-50 dark:bg-neutral-100 dark:text-neutral-900' : 'bg-neutral-50 text-neutral-600 hover:bg-white dark:bg-neutral-800 dark:text-neutral-300'}`,
           `${r === 'all' ? labels.filterAll : labels.roles[r]} ${count}`
         );
         btn.setAttribute('type', 'button');
         btn.addEventListener('click', () => {
           filter = r;
-          render();
+          renderUsers();
         });
         filters.append(btn);
       });
     };
 
-    const render = () => {
+    const renderUsers = () => {
       renderFilters();
       const term = search.value.trim().toLowerCase();
       const list = users
@@ -178,16 +315,9 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
         return;
       }
       list.forEach(u => {
-        const tr = el(
-          'tr',
-          'border-t border-neutral-300/60 dark:border-neutral-700'
-        );
+        const tr = el('tr', 'border-t border-neutral-300 dark:border-neutral-700');
         tr.append(
-          el(
-            'td',
-            'p-3 font-semibold',
-            u.uid === me?.uid ? `${u.name}${labels.you}` : u.name
-          )
+          el('td', 'p-3 font-bold', u.uid === me ? `${u.name}${labels.you}` : u.name)
         );
         tr.append(el('td', 'p-3 text-neutral-600 dark:text-neutral-400', u.email));
         tr.append(
@@ -199,18 +329,18 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
         );
         const td = el('td', 'p-3');
         const options = assignable(u.role);
-        if (!options.length || u.uid === me?.uid) {
+        if (!options.length || u.uid === me) {
           td.append(
             el(
               'span',
-              'rounded-full bg-orange-400/15 px-3 py-1 text-xs font-bold text-orange-600 dark:text-orange-300',
+              'rounded-full bg-orange-100 px-3 py-1 text-xs font-bold text-orange-700 dark:bg-orange-950 dark:text-orange-200',
               labels.roles[u.role]
             )
           );
         } else {
           const select = el(
             'select',
-            'rounded-xl border border-neutral-300 bg-white px-3 py-1.5 dark:border-neutral-700 dark:bg-neutral-800'
+            'rounded-xl border-2 border-neutral-300 bg-white px-3 py-1.5 dark:border-neutral-600 dark:bg-neutral-900'
           ) as HTMLSelectElement;
           options.forEach(r => {
             const o = el('option', '', labels.roles[r]) as HTMLOptionElement;
@@ -238,12 +368,12 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
       });
     };
 
-    search.addEventListener('input', render);
+    search.addEventListener('input', renderUsers);
 
     watchSession(session => {
-      stopUsers?.();
-      stopUsers = null;
-      const allowed = hasRole(session, 'admin');
+      stops.forEach(stop => stop());
+      stops = [];
+      const allowed = hasRole(session, 'super');
       message.textContent = !session
         ? labels.signInFirst
         : allowed
@@ -253,17 +383,17 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
       panel.classList.toggle('hidden', !allowed);
       if (!session || !allowed) return;
 
-      me = { uid: session.user.uid, role: session.role };
-      stopUsers = watchUsers(
-        list => {
+      me = session.user.uid;
+      const onError = (err: Error) => {
+        console.error(err);
+        toast(labels.saveFailed);
+      };
+      stops.push(
+        watchPendingApplications(renderPending, onError),
+        watchUsers(list => {
           users = list;
-          render();
-        },
-        err => {
-          console.error(err);
-          message.textContent = labels.saveFailed;
-          message.classList.remove('hidden');
-        }
+          renderUsers();
+        }, onError)
       );
     });
   }

@@ -19,6 +19,7 @@ Crawl-delay: 2
 User-agent: *
 Allow: /
 Disallow: ${withBase('/admin')}
+Disallow: ${withBase('/profile')}
 
 Sitemap: ${SITE.url}${withBase('/sitemap-index.xml')}
 `.trim();

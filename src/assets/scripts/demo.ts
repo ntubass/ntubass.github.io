@@ -1,5 +1,6 @@
 import type { Booking } from '@data/venues';
 import type { Role } from '@data/firebase';
+import type { Application } from '@scripts/applications';
 
 /**
  * 展示模式的假資料：還沒設定 Firebase 時，在自己電腦上（`npm run dev`）用來看
@@ -27,6 +28,7 @@ const KEYS = {
   role: 'demo:role',
   bookings: 'demo:bookings',
   users: 'demo:users',
+  applications: 'demo:applications',
 };
 
 const read = <T>(key: string, fallback: () => T): T => {
@@ -151,6 +153,60 @@ export const onDemoUsers = (fn: UserListener) => {
   userListeners.add(fn);
   fn(getDemoUsers());
   return () => userListeners.delete(fn);
+};
+
+// --- 系上同學申請 ---
+
+/** 示意用的學生證照片（不是真的證件） */
+const SAMPLE_ID_PHOTO =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400"><rect width="640" height="400" rx="24" fill="#efe9dc"/><rect x="32" y="32" width="170" height="210" rx="10" fill="#d3c9b5"/><text x="240" y="90" font-size="34" font-family="sans-serif" font-weight="700" fill="#2b2420">範例學生證</text><text x="240" y="150" font-size="24" font-family="sans-serif" fill="#5f564a">展示模式用的示意圖</text><text x="240" y="200" font-size="24" font-family="sans-serif" fill="#5f564a">不是真的證件</text></svg>`
+  );
+
+const seedApplications = (): Application[] => [
+  {
+    uid: 'demo-u1',
+    name: '範例同學 A',
+    email: 'student-a@example.com',
+    phone: '0912345678',
+    studentId: 'B12705001',
+    photo: SAMPLE_ID_PHOTO,
+    status: 'pending',
+    note: '',
+    submittedAt: new Date(Date.now() - 3600_000 * 5),
+  },
+  {
+    uid: 'demo-u2',
+    name: '範例同學 B',
+    email: 'student-b@example.com',
+    phone: '0987654321',
+    studentId: 'B11705023',
+    photo: SAMPLE_ID_PHOTO,
+    status: 'pending',
+    note: '',
+    submittedAt: new Date(Date.now() - 3600_000 * 30),
+  },
+];
+
+type ApplicationListener = (list: Application[]) => void;
+const applicationListeners = new Set<ApplicationListener>();
+
+export const getDemoApplications = (): Application[] =>
+  read(KEYS.applications, seedApplications).map(a => ({
+    ...a,
+    submittedAt: a.submittedAt ? new Date(a.submittedAt) : null,
+  }));
+export const setDemoApplication = (app: Application) => {
+  const list = getDemoApplications().filter(a => a.uid !== app.uid);
+  write(KEYS.applications, [...list, app]);
+  const all = getDemoApplications();
+  applicationListeners.forEach(fn => fn(all));
+};
+export const onDemoApplications = (fn: ApplicationListener) => {
+  applicationListeners.add(fn);
+  fn(getDemoApplications());
+  return () => applicationListeners.delete(fn);
 };
 
 /** 清掉展示資料，回到預設的範例 */

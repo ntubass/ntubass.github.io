@@ -22,8 +22,11 @@ export default defineConfig({
     '/interviews': `${BASE}/career#interviews`,
   },
   prefetch: true,
-  // 管理後台不放進 sitemap
-  integrations: [sitemap({ filter: page => !page.includes('/admin') }), mdx()],
+  // 管理後台與個人資料頁不放進 sitemap
+  integrations: [
+    sitemap({ filter: page => !/\/(admin|profile)\/?$/.test(page) }),
+    mdx(),
+  ],
   experimental: {
     clientPrerender: true,
   },

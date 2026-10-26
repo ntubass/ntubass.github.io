@@ -9,7 +9,7 @@ import { venues, VENUE_FORM_URL } from '@data/venues';
 import { BOOKING_DAYS_AHEAD } from '@data/firebase';
 import { socialLinks } from '@data/navigation';
 import { getCopy } from '@/copy';
-import type { MarketingLocale } from '@utils/locale';
+import { localePath, type MarketingLocale } from '@utils/locale';
 
 /**
  * 場地借用：借用狀況（一週行事曆）→ 場地介紹（含進入方式）→ 借用辦法 → 使用規範。
@@ -78,6 +78,13 @@ const daysAheadText = copy.booking.daysAhead.replace(
           <Icon name="google" class="h-4 w-4" />
           {copy.booking.signInBtn}
         </button>
+        <a
+          href={localePath(locale, '/profile')}
+          class="hidden shrink-0 items-center self-start rounded-xl bg-neutral-800 px-4 py-2.5 text-sm font-bold text-neutral-50 transition hover:bg-neutral-700 sm:self-center"
+          data-booking-profile
+        >
+          {copy.booking.profileBtn}
+        </a>
         <button
           type="button"
           class="hidden shrink-0 items-center gap-x-2 self-start rounded-xl bg-yellow-400 px-4 py-2.5 text-sm font-bold text-neutral-800 transition hover:bg-yellow-500 sm:self-center"

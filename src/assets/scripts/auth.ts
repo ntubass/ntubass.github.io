@@ -124,7 +124,7 @@ function mountDemoBar() {
     .join('')}<button type="button" data-demo-reset title="清除展示資料">重設</button>`;
   const style = document.createElement('style');
   style.textContent = `
-    .demo-bar { position: fixed; left: 12px; bottom: 12px; z-index: 90; display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+    .demo-bar { position: fixed; left: 12px; bottom: 64px; z-index: 90; display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
       max-width: calc(100vw - 24px); padding: 6px; border-radius: 14px; background: rgb(23 23 23 / .92); color: #fafafa;
       font: 600 12px/1 system-ui, sans-serif; box-shadow: 0 8px 24px rgb(0 0 0 / .25); }
     .demo-bar span { padding: 0 6px; color: #facc15; }
@@ -168,16 +168,30 @@ export function watchSession(fn: Listener): () => void {
 export const hasRole = (session: Session | null, role: Role) =>
   !!session && ROLE_RANK[session.role] >= ROLE_RANK[role];
 
+/** 一般帳號登入後帶去個人資料頁（還沒核准為系上同學的人要先填資料） */
+const goToProfileIfMember = () => {
+  const off = watchSession(session => {
+    if (!session) return;
+    queueMicrotask(() => off());
+    const profile = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/profile/`;
+    if (session.role === 'member' && location.pathname !== profile)
+      location.assign(profile);
+  });
+};
+
 export async function signIn() {
   if (isDemo) {
     setDemoRole('member');
-    return emitDemo();
+    emitDemo();
+    return goToProfileIfMember();
   }
   if (!auth) return;
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   try {
     await signInWithPopup(auth, provider);
+    // 讀到角色後再判斷要不要帶去個人資料頁（還沒讀到前收到的是 null，會繼續等）
+    goToProfileIfMember();
   } catch (err) {
     const code = (err as { code?: string }).code;
     // 使用者自己關掉視窗不算錯誤

@@ -80,6 +80,7 @@ if (root && raw) {
   const daysHint = $('[data-booking-days]');
   const signInBtn = $<HTMLButtonElement>('[data-booking-signin]');
   const openBtn = $<HTMLButtonElement>('[data-booking-open]');
+  const profileBtn = $('[data-booking-profile]');
   const dialog = $<HTMLDialogElement>('[data-booking-dialog]');
   const form = $<HTMLFormElement>('[data-booking-form]');
   const tableField = $('[data-table-field]');
@@ -419,6 +420,7 @@ if (root && raw) {
       show(bar, true, 'flex');
       show(signInBtn, !s, 'inline-flex');
       show(openBtn, canBook(), 'inline-flex');
+      show(profileBtn, !!s && !canBook(), 'inline-flex');
       show(daysHint, canBook(), 'inline');
       hint.textContent = !s
         ? data.booking.signInHint

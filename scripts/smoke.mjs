@@ -16,6 +16,7 @@ const ROUTES = [
   '/activities/',
   '/about-us/',
   '/admin/',
+  '/profile/',
   '/404',
 ];
 
@@ -27,7 +28,8 @@ const EXPECTATIONS = {
   '/resources/': ['data-resource-tabs', 'id="exams"', '/resources/business-frameworks/', 'mergersandinquisitions.com/400-questions'],
   '/resources/business-frameworks/': ['五力分析', '"@type":"Article"'],
   '/venues/': ['venue-schedule-data', 'data-week-body', '105 教室', '討論桌 1', 'data-booking-dialog'],
-  '/admin/': ['data-admin-rows'],
+  '/admin/': ['data-admin-rows', 'data-pending-list'],
+  '/profile/': ['data-profile-form', 'capture="environment"'],
   '/interviews/2026-pm-chen/': ['"@type":"Article"', 'interview-body'],
   '/interviews/': ['/career#interviews'],
   '/about-us/': ['id="team"'],
