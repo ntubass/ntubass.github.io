@@ -10,12 +10,14 @@ import {
   where,
 } from 'firebase/firestore';
 import type { Booking } from '@data/venues';
-import { db } from '@scripts/auth';
+import { db, isDemo } from '@scripts/auth';
+import { getDemoBookings, onDemoBookings, setDemoBookings } from '@scripts/demo';
 
 /**
  * 線上預約的讀寫。資料存在 Firestore 的 `bookingDays/{場地}_{日期}`：
  * 同一個場地同一天的預約放在同一份文件的 `bookings` 欄位裡，
  * 所以新增時可以用 transaction 一次檢查「這天有沒有重疊」，兩個人同時按也不會重複預約。
+ * 展示模式（見 auth.ts）時改用 demo.ts 的假資料，頁面用法完全一樣。
  */
 
 export type NewBooking = Omit<Booking, 'id' | 'uid' | 'name'>;
@@ -38,6 +40,12 @@ export function watchBookings(
   onData: (bookings: Booking[]) => void,
   onError: (err: Error) => void
 ) {
+  if (isDemo) {
+    const push = () =>
+      onData(getDemoBookings().filter(b => b.date >= from && b.date <= to));
+    push();
+    return onDemoBookings(push);
+  }
   const q = query(
     collection(db!, 'bookingDays'),
     where('date', '>=', from),
@@ -78,8 +86,14 @@ export async function addBooking(
   booking: NewBooking,
   user: { uid: string; name: string }
 ) {
-  const ref = dayRef(booking.venue, booking.date);
   const id = crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+  if (isDemo) {
+    const list = getDemoBookings();
+    if (list.some(b => conflicts(booking, b))) throw new OverlapError();
+    setDemoBookings([...list, { ...booking, id, ...user }]);
+    return;
+  }
+  const ref = dayRef(booking.venue, booking.date);
   const entry = {
     table: booking.table,
     start: booking.start,
@@ -111,7 +125,13 @@ export async function addBooking(
 }
 
 /** 取消一筆預約（自己的，或管理員取消任何人的） */
-export function removeBooking(b: Pick<Booking, 'id' | 'venue' | 'date'>) {
+export async function removeBooking(
+  b: Pick<Booking, 'id' | 'venue' | 'date'>
+) {
+  if (isDemo) {
+    setDemoBookings(getDemoBookings().filter(x => x.id !== b.id));
+    return;
+  }
   return updateDoc(dayRef(b.venue, b.date), {
     [`bookings.${b.id}`]: deleteField(),
   });

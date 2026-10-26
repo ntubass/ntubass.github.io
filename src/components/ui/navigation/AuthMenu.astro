@@ -67,10 +67,10 @@ const labels = { roles: t.auth.roles };
 </div>
 
 <script>
-  import { hasRole, isConfigured, signIn, signOut, watchSession } from '@scripts/auth';
+  import { hasRole, isEnabled, signIn, signOut, watchSession } from '@scripts/auth';
 
   const root = document.querySelector<HTMLElement>('[data-auth-menu]');
-  if (root && isConfigured) {
+  if (root && isEnabled) {
     const labels = JSON.parse(root.dataset.labels!) as {
       roles: Record<string, string>;
     };
@@ -80,9 +80,10 @@ const labels = { roles: t.auth.roles };
     const toggle = q('[data-auth-toggle]');
     const dropdown = q('[data-auth-dropdown]');
     const adminLink = q('[data-auth-admin]');
+    // 直接設 display，不會被元素本身的 inline-flex 等 class 蓋過
     const show = (node: HTMLElement, on: boolean, display: string) => {
-      node.classList.toggle('hidden', !on);
-      node.style.display = on ? display : '';
+      node.classList.remove('hidden');
+      node.style.display = on ? display : 'none';
     };
     const setOpen = (open: boolean) => {
       show(dropdown, open, 'flex');
@@ -95,7 +96,9 @@ const labels = { roles: t.auth.roles };
       show(toggle, !!session, 'inline-flex');
       if (!session) return setOpen(false);
       const { user, role } = session;
-      q<HTMLImageElement>('[data-auth-photo]').src = user.photoURL ?? '';
+      const photo = q<HTMLImageElement>('[data-auth-photo]');
+      photo.hidden = !user.photoURL;
+      if (user.photoURL) photo.src = user.photoURL;
       q('[data-auth-name]').textContent = user.displayName ?? user.email ?? '';
       q('[data-auth-role]').textContent = labels.roles[role];
       show(adminLink, hasRole(session, 'admin'), 'block');
@@ -103,7 +106,7 @@ const labels = { roles: t.auth.roles };
 
     signInBtn.addEventListener('click', () => signIn());
     toggle.addEventListener('click', () =>
-      setOpen(dropdown.classList.contains('hidden'))
+      setOpen(dropdown.style.display !== 'flex')
     );
     q('[data-auth-signout]').addEventListener('click', () => {
       setOpen(false);

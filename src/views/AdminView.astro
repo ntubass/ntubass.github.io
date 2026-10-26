@@ -76,8 +76,8 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
 </MainLayout>
 
 <script>
-  import { collection, doc, onSnapshot, updateDoc } from 'firebase/firestore';
-  import { db, hasRole, isConfigured, watchSession } from '@scripts/auth';
+  import { hasRole, isEnabled, watchSession } from '@scripts/auth';
+  import { setUserRole, watchUsers, type UserRow } from '@scripts/users';
   import { ROLE_RANK, type Role } from '@data/firebase';
 
   type Labels = {
@@ -90,17 +90,9 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
     saveFailed: string;
     roles: Record<Role, string>;
   };
-  type UserRow = {
-    uid: string;
-    name: string;
-    email: string;
-    role: Role;
-    createdAt: Date | null;
-  };
 
   const root = document.querySelector<HTMLElement>('[data-admin]');
-  if (root && isConfigured && db) {
-    const store = db;
+  if (root && isEnabled) {
     const labels: Labels = JSON.parse(root.dataset.labels!);
     const message = root.querySelector<HTMLElement>('[data-admin-message]')!;
     const panel = root.querySelector<HTMLElement>('[data-admin-panel]')!;
@@ -229,7 +221,7 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
           select.addEventListener('change', async () => {
             select.disabled = true;
             try {
-              await updateDoc(doc(store, 'users', u.uid), { role: select.value });
+              await setUserRole(u.uid, select.value as Role);
               toast(labels.saved);
             } catch (err) {
               console.error(err);
@@ -262,19 +254,9 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
       if (!session || !allowed) return;
 
       me = { uid: session.user.uid, role: session.role };
-      stopUsers = onSnapshot(
-        collection(store, 'users'),
-        snap => {
-          users = snap.docs.map(d => {
-            const v = d.data();
-            return {
-              uid: d.id,
-              name: String(v.name ?? ''),
-              email: String(v.email ?? ''),
-              role: (v.role in ROLE_RANK ? v.role : 'member') as Role,
-              createdAt: v.createdAt?.toDate?.() ?? null,
-            };
-          });
+      stopUsers = watchUsers(
+        list => {
+          users = list;
           render();
         },
         err => {

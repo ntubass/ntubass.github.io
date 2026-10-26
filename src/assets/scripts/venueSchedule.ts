@@ -1,7 +1,7 @@
 import type { Booking } from '@data/venues';
 import {
   hasRole,
-  isConfigured,
+  isEnabled,
   signIn,
   watchSession,
   type Session,
@@ -108,9 +108,10 @@ if (root && raw) {
     if (text) node.textContent = text;
     return node;
   };
+  // 直接設 display，不會被元素本身的 flex 等 class 蓋過
   const show = (node: HTMLElement, on: boolean, display = 'block') => {
-    node.classList.toggle('hidden', !on);
-    node.style.display = on ? display : '';
+    node.classList.remove('hidden');
+    node.style.display = on ? display : 'none';
   };
 
   let toastTimer = 0;
@@ -194,7 +195,7 @@ if (root && raw) {
         'block p-1 text-xs text-neutral-400 dark:text-neutral-500',
         text
       );
-    const btn = el('button', 'slot-free', `+ ${text}`);
+    const btn = el('button', 'slot-free', text === '+' ? '+' : `+ ${text}`);
     btn.setAttribute('type', 'button');
     btn.addEventListener('click', () => openDialog({ date: dayIso, venue, table }));
     return btn;
@@ -370,7 +371,7 @@ if (root && raw) {
   let unsubscribe: (() => void) | null = null;
   const subscribe = () => {
     unsubscribe?.();
-    if (!isConfigured) return;
+    if (!isEnabled) return;
     const week = weekDates();
     status.textContent = data.labels.loading;
     show(status, true);
@@ -408,7 +409,7 @@ if (root && raw) {
   });
 
   // --- 預約提示列：依登入狀態顯示 ---
-  if (isConfigured) {
+  if (isEnabled) {
     watchSession(s => {
       session = s;
       show(bar, true, 'flex');
