@@ -17,7 +17,7 @@ interface Props {
 
 const { compact = false, centered = false } = Astro.props;
 const cardClass =
-  'rounded-2xl border border-neutral-300/60 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900/50';
+  'rounded-[1.5rem] bg-neutral-50 dark:bg-neutral-900';
 
 // 讀進 src/images/team/ 裡所有照片，讓 team.ts 只要寫檔名就好
 const photoFiles = import.meta.glob<{ default: ImageMetadata }>(
@@ -37,13 +37,18 @@ function photoOf(filename: string): ImageMetadata {
 
 {
   compact ? (
-    <ul class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+    <ul class="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
       {departments.map(dept => (
-        <li class:list={[cardClass, 'p-5', centered && 'text-center']}>
-          <h3 class="text-lg font-bold text-neutral-800 dark:text-neutral-200">
+        <li
+          class:list={[
+            'border-t-2 border-neutral-900 pt-4 dark:border-neutral-100',
+            centered && 'text-center',
+          ]}
+        >
+          <h3 class="text-xl text-neutral-900 dark:text-neutral-50">
             {dept.name}
           </h3>
-          <p class="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+          <p class="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
             {dept.members.map(member => member.name).join('、')}
           </p>
         </li>

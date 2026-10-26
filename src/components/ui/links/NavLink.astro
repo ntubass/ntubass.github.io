@@ -22,7 +22,7 @@ const { url, name, alsoActiveOn = [], home = false } = Astro.props;
   data-nav-also={alsoActiveOn.join(',')}
   data-nav-home={home ? 'true' : undefined}
   data-astro-prefetch
-  class="rounded-lg text-base font-medium text-neutral-600 ring-zinc-500 outline-hidden hover:text-neutral-500 focus-visible:ring-3 md:py-3 md:text-sm 2xl:text-base dark:text-neutral-400 dark:ring-zinc-200 dark:hover:text-neutral-500 dark:focus:outline-hidden"
+  class="nav-link relative rounded-lg text-base font-medium text-neutral-600 hover:text-neutral-900 md:py-4 md:text-[0.9rem] 2xl:text-base dark:text-neutral-400 dark:hover:text-neutral-100"
 >
   {name}
 </a>
@@ -44,13 +44,13 @@ const { url, name, alsoActiveOn = [], home = false } = Astro.props;
           ? current === target
           : under(target) || also.some(under);
       if (!active) return;
-      link.classList.remove(
-        'text-neutral-600',
-        'dark:text-neutral-400',
-        'hover:text-neutral-500',
-        'dark:hover:text-neutral-500'
+      link.classList.remove('text-neutral-600', 'dark:text-neutral-400');
+      link.classList.add(
+        'is-active',
+        'font-bold',
+        'text-neutral-900',
+        'dark:text-neutral-50'
       );
-      link.classList.add('text-orange-400', 'dark:text-orange-300');
       link.setAttribute('aria-current', 'page');
     });
   };
@@ -58,3 +58,20 @@ const { url, name, alsoActiveOn = [], home = false } = Astro.props;
     document.addEventListener('DOMContentLoaded', highlight);
   else highlight();
 </script>
+
+<style is:global>
+  /* 目前所在頁面：底下一條黃色短線 */
+  @media (min-width: 768px) {
+    .nav-link.is-active::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0.55rem;
+      margin-inline: auto;
+      height: 3px;
+      width: 1.1rem;
+      border-radius: 9999px;
+      background: var(--color-yellow-400);
+    }
+  }
+</style>

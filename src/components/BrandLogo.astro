@@ -12,8 +12,15 @@ interface Props {
 const { class: className } = Astro.props;
 ---
 
-<span class:list={['inline-flex leading-tight', className]}>
-  <span class="text-lg font-bold tracking-tight text-neutral-800 dark:text-neutral-200">
+<span class:list={['inline-flex items-center gap-x-2.5 leading-tight', className]}>
+  {/* 黃色方塊字標 */}
+  <span
+    class="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-yellow-400 font-serif text-base font-black text-neutral-900"
+    aria-hidden="true"
+  >
+    工
+  </span>
+  <span class="font-serif text-lg font-black tracking-tight text-neutral-900 dark:text-neutral-50">
     {SITE.title}
   </span>
 </span>

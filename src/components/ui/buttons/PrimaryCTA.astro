@@ -18,18 +18,18 @@ interface Props {
 const { title, url, variant = 'orange', noArrow, ...rest } = Astro.props;
 
 const variants = {
+  // 兩個名稱保留給既有的呼叫端；現在都是黃底深字的主按鈕
   orange:
-    'text-neutral-50 bg-orange-400 hover:bg-orange-500 active:bg-orange-500',
-  yellow: 'text-neutral-800 bg-yellow-400 hover:bg-yellow-500',
+    'text-neutral-900 bg-yellow-400 shadow-[0_6px_20px_-6px_oklch(0.68_0.145_76/0.6)] hover:bg-yellow-300',
+  yellow:
+    'text-neutral-900 bg-yellow-400 shadow-[0_6px_20px_-6px_oklch(0.68_0.145_76/0.6)] hover:bg-yellow-300',
 };
 
 const classes = [
-  'group inline-flex items-center justify-center gap-x-2 rounded-lg px-4 py-3 text-sm font-bold ring-zinc-500 transition duration-300 focus-visible:ring-3 outline-hidden',
+  'press group inline-flex items-center justify-center gap-x-2 rounded-full px-6 py-3.5 text-[0.95rem] font-bold transition duration-200',
   'border border-transparent',
   variants[variant],
-  'disabled:pointer-events-none disabled:opacity-50 dark:focus:outline-hidden',
-  '2xl:text-base',
-  'dark:ring-zinc-200',
+  'disabled:pointer-events-none disabled:opacity-50',
 ].join(' ');
 
 const Element = url ? 'a' : 'button';
