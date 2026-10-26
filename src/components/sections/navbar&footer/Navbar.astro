@@ -3,6 +3,7 @@ import ThemeIcon from '@components/ThemeIcon.astro';
 import NavLink from '@components/ui/links/NavLink.astro';
 import BrandLogo from '@components/BrandLogo.astro';
 import NavbarToggle from '@components/ui/buttons/NavbarToggle.astro';
+import AuthMenu from '@components/ui/navigation/AuthMenu.astro';
 import { SITE } from '@data/constants';
 import { navLinks } from '@data/navigation';
 import { localePath } from '@utils/locale';
@@ -52,6 +53,9 @@ const { locale, copy: t } = Astro.locals;
         <span class="hidden md:inline-block">
           <ThemeIcon />
         </span>
+
+        {/* Google 登入（Firebase 設定好之後才會出現） */}
+        <AuthMenu />
       </div>
     </div>
   </nav>

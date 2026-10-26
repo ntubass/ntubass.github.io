@@ -24,7 +24,8 @@ export default defineConfig({
     '/recruit': `${BASE}/about-us#recruit`,
   },
   prefetch: true,
-  integrations: [sitemap(), mdx()],
+  // 管理後台不放進 sitemap
+  integrations: [sitemap({ filter: page => !page.includes('/admin') }), mdx()],
   experimental: {
     clientPrerender: true,
   },

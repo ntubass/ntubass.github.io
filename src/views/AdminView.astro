@@ -1,0 +1,288 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import Section from '@components/ui/blocks/Section.astro';
+import SectionHeader from '@components/ui/blocks/SectionHeader.astro';
+import { getCopy } from '@/copy';
+import type { MarketingLocale } from '@utils/locale';
+
+/**
+ * 管理後台：列出所有登入過的人，管理員可以把人設成「一般」或「系上同學」，
+ * 超級管理員還可以任命或取消管理員。不在導覽列上，也不會出現在 sitemap。
+ * 真正的權限檢查在 firestore.rules，這個頁面只是操作介面。
+ */
+interface Props {
+  locale: MarketingLocale;
+}
+
+const { locale } = Astro.props;
+const copy = getCopy(locale);
+const labels = { ...copy.admin, roles: copy.auth.roles };
+---
+
+<MainLayout title={copy.admin.title}>
+  <Section>
+    <SectionHeader title={copy.admin.title} subTitle={copy.admin.subTitle} />
+
+    <div data-admin data-labels={JSON.stringify(labels)}>
+      <p
+        class="rounded-2xl bg-neutral-50 p-6 text-neutral-600 dark:bg-neutral-900/60 dark:text-neutral-400"
+        data-admin-message
+      >
+        {copy.admin.notConfigured}
+      </p>
+
+      <div class="hidden" data-admin-panel>
+        <div class="mb-4 flex flex-wrap items-center gap-3">
+          <input
+            type="search"
+            class="w-full max-w-xs rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+            placeholder={copy.admin.search}
+            data-admin-search
+          />
+          <div class="flex flex-wrap gap-2" data-admin-filters></div>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-neutral-300/60 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900/60">
+          <table class="w-full min-w-[40rem] text-left text-sm">
+            <thead class="border-b border-neutral-300/60 text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+              <tr>
+                <th class="p-3 font-semibold">{copy.admin.name}</th>
+                <th class="p-3 font-semibold">{copy.admin.email}</th>
+                <th class="p-3 font-semibold">{copy.admin.joined}</th>
+                <th class="p-3 font-semibold">{copy.admin.role}</th>
+              </tr>
+            </thead>
+            <tbody
+              class="text-neutral-800 dark:text-neutral-200"
+              data-admin-rows
+            >
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="pointer-events-none fixed inset-x-0 bottom-6 z-100 flex justify-center px-4"
+      aria-live="polite"
+    >
+      <p
+        class="hidden rounded-full bg-neutral-800 px-5 py-2.5 text-sm font-semibold text-neutral-50 shadow-lg dark:bg-neutral-100 dark:text-neutral-800"
+        data-admin-toast
+      >
+      </p>
+    </div>
+  </Section>
+</MainLayout>
+
+<script>
+  import { collection, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+  import { db, hasRole, isConfigured, watchSession } from '@scripts/auth';
+  import { ROLE_RANK, type Role } from '@data/firebase';
+
+  type Labels = {
+    signInFirst: string;
+    noPermission: string;
+    filterAll: string;
+    you: string;
+    empty: string;
+    saved: string;
+    saveFailed: string;
+    roles: Record<Role, string>;
+  };
+  type UserRow = {
+    uid: string;
+    name: string;
+    email: string;
+    role: Role;
+    createdAt: Date | null;
+  };
+
+  const root = document.querySelector<HTMLElement>('[data-admin]');
+  if (root && isConfigured && db) {
+    const store = db;
+    const labels: Labels = JSON.parse(root.dataset.labels!);
+    const message = root.querySelector<HTMLElement>('[data-admin-message]')!;
+    const panel = root.querySelector<HTMLElement>('[data-admin-panel]')!;
+    const rowsEl = root.querySelector<HTMLElement>('[data-admin-rows]')!;
+    const search = root.querySelector<HTMLInputElement>('[data-admin-search]')!;
+    const filters = root.querySelector<HTMLElement>('[data-admin-filters]')!;
+    const toastEl = document.querySelector<HTMLElement>('[data-admin-toast]')!;
+    const roles = Object.keys(ROLE_RANK) as Role[];
+    message.textContent = labels.signInFirst;
+
+    const el = (tag: string, cls = '', text = '') => {
+      const node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text) node.textContent = text;
+      return node;
+    };
+    let toastTimer = 0;
+    const toast = (text: string) => {
+      toastEl.textContent = text;
+      toastEl.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => toastEl.classList.add('hidden'), 2500);
+    };
+
+    let me: { uid: string; role: Role } | null = null;
+    let users: UserRow[] = [];
+    let filter: Role | 'all' = 'all';
+    let stopUsers: (() => void) | null = null;
+
+    // 我可以把別人設成哪些角色：管理員只能在一般／系上同學之間切換，
+    // 超級管理員還可以任命管理員；超級管理員本身只能在 Firebase 主控台設定
+    const assignable = (target: Role): Role[] => {
+      if (!me || target === 'super') return [];
+      if (me.role === 'super') return ['member', 'student', 'admin'];
+      if (me.role === 'admin' && ROLE_RANK[target] < ROLE_RANK.admin)
+        return ['member', 'student'];
+      return [];
+    };
+
+    const renderFilters = () => {
+      filters.replaceChildren();
+      (['all', ...roles] as const).forEach(r => {
+        const count =
+          r === 'all' ? users.length : users.filter(u => u.role === r).length;
+        const btn = el(
+          'button',
+          `rounded-full px-3 py-1.5 text-xs font-bold transition ${filter === r ? 'bg-yellow-400 text-neutral-800' : 'bg-neutral-200 text-neutral-600 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-300'}`,
+          `${r === 'all' ? labels.filterAll : labels.roles[r]} ${count}`
+        );
+        btn.setAttribute('type', 'button');
+        btn.addEventListener('click', () => {
+          filter = r;
+          render();
+        });
+        filters.append(btn);
+      });
+    };
+
+    const render = () => {
+      renderFilters();
+      const term = search.value.trim().toLowerCase();
+      const list = users
+        .filter(u => filter === 'all' || u.role === filter)
+        .filter(
+          u =>
+            !term ||
+            u.name.toLowerCase().includes(term) ||
+            u.email.toLowerCase().includes(term)
+        )
+        .sort(
+          (a, b) =>
+            ROLE_RANK[b.role] - ROLE_RANK[a.role] ||
+            (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0)
+        );
+
+      rowsEl.replaceChildren();
+      if (!list.length) {
+        const tr = el('tr');
+        const td = el('td', 'p-6 text-center text-neutral-500', labels.empty);
+        td.setAttribute('colspan', '4');
+        tr.append(td);
+        rowsEl.append(tr);
+        return;
+      }
+      list.forEach(u => {
+        const tr = el(
+          'tr',
+          'border-t border-neutral-300/60 dark:border-neutral-700'
+        );
+        tr.append(
+          el(
+            'td',
+            'p-3 font-semibold',
+            u.uid === me?.uid ? `${u.name}${labels.you}` : u.name
+          )
+        );
+        tr.append(el('td', 'p-3 text-neutral-600 dark:text-neutral-400', u.email));
+        tr.append(
+          el(
+            'td',
+            'p-3 text-neutral-500',
+            u.createdAt ? u.createdAt.toLocaleDateString('zh-TW') : ''
+          )
+        );
+        const td = el('td', 'p-3');
+        const options = assignable(u.role);
+        if (!options.length || u.uid === me?.uid) {
+          td.append(
+            el(
+              'span',
+              'rounded-full bg-orange-400/15 px-3 py-1 text-xs font-bold text-orange-600 dark:text-orange-300',
+              labels.roles[u.role]
+            )
+          );
+        } else {
+          const select = el(
+            'select',
+            'rounded-xl border border-neutral-300 bg-white px-3 py-1.5 dark:border-neutral-700 dark:bg-neutral-800'
+          ) as HTMLSelectElement;
+          options.forEach(r => {
+            const o = el('option', '', labels.roles[r]) as HTMLOptionElement;
+            o.value = r;
+            select.append(o);
+          });
+          select.value = u.role;
+          select.addEventListener('change', async () => {
+            select.disabled = true;
+            try {
+              await updateDoc(doc(store, 'users', u.uid), { role: select.value });
+              toast(labels.saved);
+            } catch (err) {
+              console.error(err);
+              select.value = u.role;
+              toast(labels.saveFailed);
+            } finally {
+              select.disabled = false;
+            }
+          });
+          td.append(select);
+        }
+        tr.append(td);
+        rowsEl.append(tr);
+      });
+    };
+
+    search.addEventListener('input', render);
+
+    watchSession(session => {
+      stopUsers?.();
+      stopUsers = null;
+      const allowed = hasRole(session, 'admin');
+      message.textContent = !session
+        ? labels.signInFirst
+        : allowed
+          ? ''
+          : labels.noPermission;
+      message.classList.toggle('hidden', allowed);
+      panel.classList.toggle('hidden', !allowed);
+      if (!session || !allowed) return;
+
+      me = { uid: session.user.uid, role: session.role };
+      stopUsers = onSnapshot(
+        collection(store, 'users'),
+        snap => {
+          users = snap.docs.map(d => {
+            const v = d.data();
+            return {
+              uid: d.id,
+              name: String(v.name ?? ''),
+              email: String(v.email ?? ''),
+              role: (v.role in ROLE_RANK ? v.role : 'member') as Role,
+              createdAt: v.createdAt?.toDate?.() ?? null,
+            };
+          });
+          render();
+        },
+        err => {
+          console.error(err);
+          message.textContent = labels.saveFailed;
+          message.classList.remove('hidden');
+        }
+      );
+    });
+  }
+</script>

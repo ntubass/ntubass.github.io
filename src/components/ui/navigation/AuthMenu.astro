@@ -1,0 +1,119 @@
+---
+import Icon from '@components/ui/icons/Icon.astro';
+import { localePath } from '@utils/locale';
+
+/**
+ * 導覽列右上角的 Google 登入：沒登入時是「登入」按鈕，登入後顯示頭像、名字與角色，
+ * 點開有「管理後台」（管理員才有）和「登出」。Firebase 還沒設定時整塊不顯示。
+ * 登入邏輯在 `@scripts/auth`。
+ */
+const { locale, copy: t } = Astro.locals;
+const labels = { roles: t.auth.roles };
+---
+
+<div class="relative hidden" data-auth-menu data-labels={JSON.stringify(labels)}>
+  <button
+    type="button"
+    class="inline-flex items-center gap-x-2 rounded-full bg-neutral-800 px-4 py-2 text-sm font-bold text-neutral-50 transition hover:bg-neutral-700 dark:bg-yellow-400 dark:text-neutral-800 dark:hover:bg-yellow-500"
+    data-auth-signin
+  >
+    <Icon name="google" class="h-4 w-4" />
+    {t.auth.signIn}
+  </button>
+
+  <button
+    type="button"
+    class="hidden items-center gap-x-2 rounded-full py-1 ps-1 pe-3 text-sm font-semibold text-neutral-700 transition hover:bg-yellow-400/20 dark:text-neutral-300 dark:hover:bg-neutral-700"
+    aria-haspopup="menu"
+    aria-expanded="false"
+    data-auth-toggle
+  >
+    <img
+      class="h-8 w-8 rounded-full bg-neutral-300 object-cover"
+      alt=""
+      referrerpolicy="no-referrer"
+      data-auth-photo
+    />
+    <span class="flex flex-col items-start leading-tight">
+      <span class="max-w-32 truncate" data-auth-name></span>
+      <span
+        class="text-[11px] font-bold text-orange-600 dark:text-orange-300"
+        data-auth-role></span>
+    </span>
+  </button>
+
+  <div
+    class="mt-2 hidden w-44 flex-col overflow-hidden rounded-2xl border border-neutral-300/60 bg-neutral-50 py-1 shadow-lg md:absolute md:end-0 md:top-full md:z-50 dark:border-neutral-700 dark:bg-neutral-800"
+    role="menu"
+    data-auth-dropdown
+  >
+    <a
+      href={localePath(locale, '/admin')}
+      class="hidden px-4 py-2 text-sm text-neutral-700 hover:bg-yellow-400/20 dark:text-neutral-300 dark:hover:bg-neutral-700"
+      role="menuitem"
+      data-auth-admin
+    >
+      {t.auth.admin}
+    </a>
+    <button
+      type="button"
+      class="px-4 py-2 text-start text-sm text-neutral-700 hover:bg-yellow-400/20 dark:text-neutral-300 dark:hover:bg-neutral-700"
+      role="menuitem"
+      data-auth-signout
+    >
+      {t.auth.signOut}
+    </button>
+  </div>
+</div>
+
+<script>
+  import { hasRole, isConfigured, signIn, signOut, watchSession } from '@scripts/auth';
+
+  const root = document.querySelector<HTMLElement>('[data-auth-menu]');
+  if (root && isConfigured) {
+    const labels = JSON.parse(root.dataset.labels!) as {
+      roles: Record<string, string>;
+    };
+    const q = <T extends HTMLElement = HTMLElement>(sel: string) =>
+      root.querySelector<T>(sel)!;
+    const signInBtn = q('[data-auth-signin]');
+    const toggle = q('[data-auth-toggle]');
+    const dropdown = q('[data-auth-dropdown]');
+    const adminLink = q('[data-auth-admin]');
+    const show = (node: HTMLElement, on: boolean, display: string) => {
+      node.classList.toggle('hidden', !on);
+      node.style.display = on ? display : '';
+    };
+    const setOpen = (open: boolean) => {
+      show(dropdown, open, 'flex');
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+
+    watchSession(session => {
+      show(root, true, 'block');
+      show(signInBtn, !session, 'inline-flex');
+      show(toggle, !!session, 'inline-flex');
+      if (!session) return setOpen(false);
+      const { user, role } = session;
+      q<HTMLImageElement>('[data-auth-photo]').src = user.photoURL ?? '';
+      q('[data-auth-name]').textContent = user.displayName ?? user.email ?? '';
+      q('[data-auth-role]').textContent = labels.roles[role];
+      show(adminLink, hasRole(session, 'admin'), 'block');
+    });
+
+    signInBtn.addEventListener('click', () => signIn());
+    toggle.addEventListener('click', () =>
+      setOpen(dropdown.classList.contains('hidden'))
+    );
+    q('[data-auth-signout]').addEventListener('click', () => {
+      setOpen(false);
+      signOut();
+    });
+    document.addEventListener('click', e => {
+      if (!root.contains(e.target as Node)) setOpen(false);
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') setOpen(false);
+    });
+  }
+</script>

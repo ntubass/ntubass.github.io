@@ -1,0 +1,101 @@
+rules_version = '2';
+
+// 網站登入與線上預約的權限規則。
+// 改完後到 Firebase 主控台 → Firestore Database → 規則，整份貼上並按「發布」。
+// 角色：member（一般）< student（系上同學）< admin（管理員）< super（超級管理員）
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function myRole() {
+      let path = /databases/$(database)/documents/users/$(request.auth.uid);
+      return signedIn() && exists(path) ? get(path).data.role : 'none';
+    }
+
+    function isStudent() {
+      return myRole() in ['student', 'admin', 'super'];
+    }
+
+    function isAdmin() {
+      return myRole() in ['admin', 'super'];
+    }
+
+    // ---------- 使用者與角色 ----------
+    match /users/{uid} {
+      // 自己看得到自己的資料；管理員看得到所有人（管理後台用）
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+
+      // 第一次登入時自己建立，角色只能是「一般」
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['email', 'name', 'photo', 'role', 'createdAt'])
+        && request.resource.data.role == 'member';
+
+      // 只能改角色這個欄位：
+      // 管理員可以在「一般」和「系上同學」之間切換；
+      // 超級管理員還可以任命或取消管理員；超級管理員本身只能在主控台手動設定
+      allow update: if signedIn()
+        && request.auth.uid != uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+        && (
+          (myRole() == 'admin'
+            && resource.data.role in ['member', 'student']
+            && request.resource.data.role in ['member', 'student'])
+          ||
+          (myRole() == 'super'
+            && resource.data.role in ['member', 'student', 'admin']
+            && request.resource.data.role in ['member', 'student', 'admin'])
+        );
+    }
+
+    // ---------- 場地預約 ----------
+    // 文件 id 是「場地_日期」，例如 105_2026-10-26；同一天的預約都在 bookings 欄位裡。
+    // 時段不重疊由網頁用 transaction 檢查；這裡負責「誰可以新增、刪除哪一筆」。
+    match /bookingDays/{dayId} {
+      // 借用狀況大家都看得到
+      allow read: if true;
+
+      function validEntry(b) {
+        return b.keys().hasOnly(['table', 'start', 'end', 'by', 'purpose', 'uid', 'name', 'createdAt'])
+          && b.uid == request.auth.uid
+          && b.start is string && b.end is string && b.start < b.end
+          && b.by is string && b.by.size() > 0 && b.by.size() <= 30
+          && b.purpose is string && b.purpose.size() <= 50;
+      }
+
+      // 這一天的第一筆預約
+      allow create: if isStudent()
+        && request.resource.data.keys().hasOnly(['venue', 'date', 'bookings'])
+        && dayId == request.resource.data.venue + '_' + request.resource.data.date
+        && request.resource.data.bookings.size() == 1
+        && validEntry(request.resource.data.bookings.values()[0]);
+
+      // 之後每次只能新增一筆自己的預約，或刪除一筆自己的預約；管理員可以刪除任何一筆
+      allow update: if isStudent()
+        && request.resource.data.venue == resource.data.venue
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bookings'])
+        && changeIsAllowed(
+          request.resource.data.bookings.diff(resource.data.bookings)
+        );
+
+      function changeIsAllowed(d) {
+        return d.affectedKeys().size() == 1
+          && d.changedKeys().size() == 0
+          && (
+            (d.addedKeys().size() == 1
+              && validEntry(request.resource.data.bookings[d.addedKeys().toList()[0]]))
+            ||
+            (d.removedKeys().size() == 1
+              && (isAdmin()
+                || resource.data.bookings[d.removedKeys().toList()[0]].uid == request.auth.uid))
+          );
+      }
+
+      allow delete: if isAdmin();
+    }
+  }
+}
