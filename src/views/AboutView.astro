@@ -12,7 +12,7 @@ import { getCopy } from '@/copy';
 import type { MarketingLocale } from '@utils/locale';
 
 /**
- * 關於我們：我們是誰 & 系學會的一年 → 現任幹部 → 許願池（#wish）→ 聯絡我們。
+ * 關於我們：我們是誰 & 系學會的一年 → 許願池（#wish）→ 現任幹部 → 聯絡我們。
  * 幹部招募目前不顯示；要恢復時把 `RecruitSection` 放回聯絡我們下面（見 src/data_files/recruit.ts）。
  */
 interface Props {
@@ -47,11 +47,6 @@ const history = copy.history.items.map(item => ({
         <Timeline steps={history} />
       </div>
     </div>
-  </Section>
-
-  <Section id="team">
-    <SectionHeader title={copy.team.title} subTitle={copy.team.subTitle} />
-    <TeamGrid />
   </Section>
 
   {/* 許願池：按鈕連到表單，網址在 src/data_files/constants.ts 的 WISH_FORM_URL */}
@@ -89,6 +84,11 @@ const history = copy.history.items.map(item => ({
         </div>
       </div>
     </div>
+  </Section>
+
+  <Section id="team">
+    <SectionHeader title={copy.team.title} subTitle={copy.team.subTitle} />
+    <TeamGrid />
   </Section>
 
   <Section tone="muted" id="contact">
