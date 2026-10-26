@@ -241,29 +241,34 @@
   }
 
   /*
-    導覽列的底色：一條橫跨整個畫面的紙，下緣是撕邊。
-    用 ::before 鋪滿視窗寬度（導覽列本身在內容寬度的容器裡），z-index -1 讓它墊在連結下面。
+    導覽列：一張撕邊的紙條，放在內容寬度裡、不碰到畫面邊緣。
+    紙用 ::before（墊在連結下面），落影用 ::after（模糊的色塊，因為 clip-path 會把陰影裁掉）。
   */
-  .topbar::before {
+  .topbar::before,
+  .topbar::after {
     content: '';
     position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .topbar::before {
     z-index: -1;
-    top: 0;
-    bottom: -12px;
-    left: 50%;
-    width: 100vw;
-    transform: translateX(-50%);
     background: var(--color-paper);
-    --tear-flip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='14' preserveAspectRatio='none'%3E%3Cpath d='M0 0v8l12 4 14-5 16 6 13-6 18 4 15-5 17 6 14-5 16 3 15-4 18 6 13-5 16 4 14-6 15 5 14-4V0z'/%3E%3C/svg%3E");
-    -webkit-mask:
-      linear-gradient(#000 0 0) top / 100% calc(100% - 13px) no-repeat,
-      var(--tear-flip) bottom / 240px 14px repeat-x;
-    mask:
-      linear-gradient(#000 0 0) top / 100% calc(100% - 13px) no-repeat,
-      var(--tear-flip) bottom / 240px 14px repeat-x;
+    /* 撕痕用固定的像素起伏，紙條變高（手機展開選單）時鋸齒也不會跟著變大 */
+    clip-path: polygon(0% 5px, 4% 1px, 11% 4px, 19% 0px, 28% 3px, 37% 1px, 46% 4px, 55% 0px, 64% 3px, 73% 1px, 82% 4px, 90% 0px, 96% 3px, 100% 1px, 99.6% 50%, 100% calc(100% - 3px), 94% calc(100% - 0px), 86% calc(100% - 4px), 77% calc(100% - 1px), 68% calc(100% - 4px), 59% calc(100% - 0px), 50% calc(100% - 3px), 41% calc(100% - 0px), 32% calc(100% - 4px), 23% calc(100% - 1px), 14% calc(100% - 4px), 6% calc(100% - 0px), 0% calc(100% - 4px), 0.4% 50%);
+  }
+  .topbar::after {
+    z-index: -2;
+    inset: 10px 14px -8px;
+    border-radius: 20px;
+    background: rgb(60 45 30 / 0.3);
+    filter: blur(14px);
   }
   .dark .topbar::before {
     background: var(--color-neutral-800);
+  }
+  .dark .topbar::after {
+    background: rgb(0 0 0 / 0.5);
   }
 
   /* 拍立得相框 */
