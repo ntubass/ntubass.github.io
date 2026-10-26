@@ -253,7 +253,7 @@
   }
   .topbar::before {
     z-index: -1;
-    background: var(--color-paper);
+    background: var(--color-paper-warm);
     /* 撕痕用固定的像素起伏，紙條變高（手機展開選單）時鋸齒也不會跟著變大 */
     clip-path: polygon(0% 5px, 4% 1px, 11% 4px, 19% 0px, 28% 3px, 37% 1px, 46% 4px, 55% 0px, 64% 3px, 73% 1px, 82% 4px, 90% 0px, 96% 3px, 100% 1px, 99.6% 50%, 100% calc(100% - 3px), 94% calc(100% - 0px), 86% calc(100% - 4px), 77% calc(100% - 1px), 68% calc(100% - 4px), 59% calc(100% - 0px), 50% calc(100% - 3px), 41% calc(100% - 0px), 32% calc(100% - 4px), 23% calc(100% - 1px), 14% calc(100% - 4px), 6% calc(100% - 0px), 0% calc(100% - 4px), 0.4% 50%);
   }
