@@ -20,3 +20,6 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# 使用者提供的原始照片（網站用的是 src/images 裡縮小過的版本）
+_originals/
