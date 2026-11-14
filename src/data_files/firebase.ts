@@ -17,11 +17,12 @@ export const firebaseConfig = {
 };
 
 /**
- * 系上同學信箱驗證：部署好的 Google Apps Script 網址（見 FIREBASE.md「信箱驗證」）。
- * 同學輸入學號後，Apps Script 會寄驗證碼到「學號@ntu.edu.tw」，輸入正確就自動設成系上同學。
- * 留空字串的話，個人資料頁會顯示「信箱驗證尚未開放」。
+ * 部署好的 Google Apps Script 網址（apps-script/site-backend.gs，設定見 FIREBASE.md 步驟 7）。負責：
+ * - 系上同學信箱驗證：寄驗證碼到「學號@ntu.edu.tw」，輸入正確就自動設成系上同學
+ * - 場地預約通知：每筆新預約寄信給所有超級管理員
+ * 留空字串的話，個人資料頁會顯示「信箱驗證尚未開放」，預約也不會寄通知。
  */
-export const VERIFY_ENDPOINT = '';
+export const APPS_SCRIPT_URL = '';
 
 /**
  * 工管系的系所代碼：學號第 4～6 碼，例如 B12701001 的 701。

@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import type { Booking } from '@data/venues';
 import { db, isDemo } from '@scripts/auth';
+import { appsScriptReady, callAppsScript } from '@scripts/appsScript';
 import { getDemoBookings, onDemoBookings, setDemoBookings } from '@scripts/demo';
 
 /**
@@ -81,7 +82,7 @@ export function watchBookings(
 
 export class OverlapError extends Error {}
 
-/** 新增一筆預約；時段已被預約時丟出 `OverlapError` */
+/** 新增一筆預約，回傳這筆預約的 id；時段已被預約時丟出 `OverlapError` */
 export async function addBooking(
   booking: NewBooking,
   user: { uid: string; name: string }
@@ -91,7 +92,7 @@ export async function addBooking(
     const list = getDemoBookings();
     if (list.some(b => conflicts(booking, b))) throw new OverlapError();
     setDemoBookings([...list, { ...booking, id, ...user }]);
-    return;
+    return id;
   }
   const ref = dayRef(booking.venue, booking.date);
   const entry = {
@@ -122,6 +123,21 @@ export async function addBooking(
         bookings: { [id]: entry },
       });
   });
+  return id;
+}
+
+/**
+ * 通知所有超級管理員有一筆新預約（Apps Script 寄信）。在背景執行，失敗也不影響預約本身。
+ * 信件內容由 Apps Script 自己從資料庫讀，這裡只告訴它是哪一筆。
+ */
+export function notifyBooking(b: { id: string; venue: string; date: string }) {
+  if (isDemo || !appsScriptReady) return;
+  callAppsScript({
+    action: 'notify-booking',
+    bookingId: b.id,
+    venue: b.venue,
+    date: b.date,
+  }).catch(err => console.warn('預約通知寄送失敗', err));
 }
 
 /** 取消一筆預約（自己的，或管理員取消任何人的） */

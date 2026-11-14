@@ -10,6 +10,7 @@ import {
   OverlapError,
   addBooking,
   conflicts,
+  notifyBooking,
   removeBooking,
   watchBookings,
   type NewBooking,
@@ -532,10 +533,12 @@ if (root && raw) {
     submitBtn.disabled = true;
     submitBtn.textContent = data.booking.submitting;
     try {
-      await addBooking(b, {
+      const id = await addBooking(b, {
         uid: session.user.uid,
         name: session.user.displayName ?? session.user.email ?? '',
       });
+      // 寄信通知超級管理員（背景執行，不影響預約結果）
+      notifyBooking({ id, venue: b.venue, date: b.date });
       dialog.close();
       toast(data.booking.success);
       // 預約在別週的話，跳到那一週
