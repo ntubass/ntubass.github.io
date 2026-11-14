@@ -46,7 +46,8 @@ export const GET: APIRoute = async () => {
   );
 
   const manifest = {
-    short_name: SITE.title,
+    // 手機主畫面圖示下的短名稱，太長會被截斷
+    short_name: 'NTUBA SA',
     name: SITE.title,
     icons,
     display: 'minimal-ui',

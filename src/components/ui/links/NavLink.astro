@@ -22,7 +22,7 @@ const { url, name, alsoActiveOn = [], home = false } = Astro.props;
   data-nav-also={alsoActiveOn.join(',')}
   data-nav-home={home ? 'true' : undefined}
   data-astro-prefetch
-  class="rounded-full px-3.5 py-2 text-base font-bold text-neutral-700 transition-colors hover:bg-neutral-800/10 md:text-sm 2xl:text-base dark:text-neutral-300 dark:hover:bg-neutral-100/10"
+  class="rounded-full px-3.5 py-2 text-base font-bold whitespace-nowrap lg:px-2.5 xl:px-3.5 text-neutral-700 transition-colors hover:bg-neutral-800/10 lg:text-sm 2xl:text-base dark:text-neutral-300 dark:hover:bg-neutral-100/10"
 >
   {name}
 </a>

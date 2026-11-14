@@ -14,7 +14,7 @@ export const zhTw = {
       '國立臺灣大學工商管理學系系學會：籌辦工管系的系上活動、整理職涯與學習資源、管理系上教研教室，陪伴每一位工管人。',
     /** schema.org `WebSite.description` */
     descriptionShort: '國立臺灣大學工商管理學系系學會',
-    ogTitle: '臺大工管系學會',
+    ogTitle: 'NTUBA Student Association',
     ogDescription:
       '從小迎新、宿營到之夜，從職涯訪談到場地借用，工管系的大小事都在這裡。',
   },

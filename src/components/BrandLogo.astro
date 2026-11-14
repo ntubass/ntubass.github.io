@@ -13,7 +13,7 @@ interface Props {
 const { class: className } = Astro.props;
 ---
 
-<span class:list={['inline-flex items-center gap-x-3 leading-tight', className]}>
+<span class:list={['inline-flex min-w-0 items-center gap-x-3 leading-tight', className]}>
   <Image
     src={logo}
     alt=""
@@ -21,7 +21,8 @@ const { class: className } = Astro.props;
     height={88}
     class="h-11 w-11 shrink-0 rounded-full object-cover shadow-[0_0_0_3px_var(--color-paper-warm)]"
   />
-  <span class="text-[1.05rem] font-black tracking-tight text-neutral-800 dark:text-neutral-100">
+  {/* 1024–1279px 放不下名稱 + 7 個連結 + 帳號選單，只顯示 logo；連結本身有 aria-label（1024 以下是選單按鈕版面） */}
+  <span class="min-w-0 text-[0.95rem] font-black tracking-tight text-balance text-neutral-800 sm:text-[1.05rem] lg:hidden xl:inline xl:whitespace-nowrap dark:text-neutral-100">
     {SITE.title}
   </span>
 </span>

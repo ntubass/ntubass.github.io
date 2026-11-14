@@ -247,7 +247,8 @@ const cards = slots.map(([left, top, wide, rotate], i) => ({
       padding: 32px 22px 36px;
     }
     .hero-card h1 {
-      font-size: 32px;
+      /* 320px 的小手機上 32px 會超出畫面，跟著螢幕寬度縮小 */
+      font-size: min(32px, 8.6vw);
     }
     .hero-lead {
       font-size: 15px;
