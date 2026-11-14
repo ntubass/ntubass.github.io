@@ -38,7 +38,7 @@ export const activities: ClubActivity[] = [
     name: '宿營',
     time: '9 月',
     description:
-      '專為新生設計的迎新宿營，透過團康、隊呼與晚會，讓大家在幾天內從陌生到熟悉。',
+      '專為新生設計的迎新宿營，透過團康、隊呼與晚會，讓大家在短短幾天內從陌生變得熟悉。',
     website: '',
     photos: '',
   },
@@ -56,7 +56,7 @@ export const activities: ClubActivity[] = [
     name: '杜鵑花節',
     time: '3 月',
     description:
-      '在校園開放日向高中生介紹系上的課程與生活，由系學會成員規劃攤位與解說。',
+      '在臺大校園開放日向高中生介紹系上的課程與生活，由系學會規劃攤位與解說。',
     website: '',
     photos: '',
   },
@@ -65,7 +65,7 @@ export const activities: ClubActivity[] = [
     name: '之夜',
     time: '4 月',
     description:
-      '系上年度的表演盛會，從戲劇、舞蹈到樂團，全部由同學自己籌備與演出。',
+      '系上年度的表演盛會，從戲劇、舞蹈到樂團，皆由同學自己籌備與演出。',
     website: '',
     photos: '',
   },
@@ -74,7 +74,7 @@ export const activities: ClubActivity[] = [
     name: '期末聯歡',
     time: '6 月',
     description:
-      '學期結束前的聯歡活動，替這一學年畫下句點，也歡送即將畢業的學長姐。',
+      '學期結束前的聯歡活動，為這一學年畫下句點，也歡送即將畢業的學長姐。',
     website: '',
     photos: '',
   },

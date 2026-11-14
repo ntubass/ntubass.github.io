@@ -43,7 +43,7 @@ export const departments: Department[] = [
   },
   {
     name: '行政部',
-    description: '負責系上教研教室的借用登記、文件與會議紀錄，讓系學會順利運作。',
+    description: '負責系上教研教室的借用登記、文件與會議紀錄，讓系學會運作順暢。',
     members: [
       { name: '周愈軒', title: '行政部長', photo: '周愈軒.jpg' },
       { name: '林子曦', title: '行政部長', photo: '林子曦.jpg' },
