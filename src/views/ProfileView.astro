@@ -7,9 +7,9 @@ import { getCopy } from '@/copy';
 import { localePath, type MarketingLocale } from '@utils/locale';
 
 /**
- * 個人資料：登入後填姓名、信箱、手機、學號並上傳學生證照片，申請成為系上同學。
- * 超級管理員在管理後台核准或退回（見 `@scripts/applications`）。不在導覽列上，
- * 從右上角的帳號選單進入；一般帳號第一次登入時也會被帶到這裡。
+ * 個人資料：登入後填姓名、手機與學號，寄驗證碼到「學號@ntu.edu.tw」，
+ * 輸入正確就自動成為系上同學（見 `@scripts/verification` 與 apps-script/verify.gs）。
+ * 不在導覽列上，從右上角的帳號選單進入；一般帳號登入時也會被帶到這裡。
  */
 interface Props {
   locale: MarketingLocale;
@@ -40,19 +40,29 @@ const labels = { ...copy, venuesUrl: localePath(locale, '/venues') + '#schedule'
         {copy.signInBtn}
       </button>
 
-      {/* 申請狀態 */}
+      {/* 驗證狀態 */}
       <div class="torn-shadow mb-10 hidden" data-profile-status>
         <div class="torn px-6 py-7 sm:px-8">
           <p class="flex flex-wrap items-center gap-3">
-            <span
-              class="rounded-full px-3 py-1 text-sm font-black"
-              data-status-badge
-            ></span>
+            <span class="rounded-full px-3 py-1 text-sm font-black" data-status-badge></span>
             <span class="text-neutral-700 dark:text-neutral-300" data-status-hint></span>
           </p>
-          <p class="mt-3 hidden font-bold text-orange-600 dark:text-orange-300" data-status-note></p>
+          {/* 已驗證：顯示填過的資料 */}
+          <dl
+            class="mt-5 hidden grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm"
+            data-profile-summary
+          >
+            <dt class="font-bold text-neutral-500 dark:text-neutral-400">{copy.name}</dt>
+            <dd data-summary="name"></dd>
+            <dt class="font-bold text-neutral-500 dark:text-neutral-400">{copy.phone}</dt>
+            <dd data-summary="phone"></dd>
+            <dt class="font-bold text-neutral-500 dark:text-neutral-400">{copy.studentId}</dt>
+            <dd data-summary="studentId"></dd>
+            <dt class="font-bold text-neutral-500 dark:text-neutral-400">Email</dt>
+            <dd class="break-all" data-summary="ntuEmail"></dd>
+          </dl>
           <a
-            class="btn-sticker mt-5 hidden rounded-[14px] bg-orange-500 px-5 py-3 font-black text-neutral-50 hover:bg-orange-600"
+            class="btn-sticker mt-6 hidden rounded-[14px] bg-orange-500 px-5 py-3 font-black text-neutral-50 hover:bg-orange-600"
             data-status-booking
           >
             {copy.goBooking}
@@ -61,14 +71,11 @@ const labels = { ...copy, venuesUrl: localePath(locale, '/venues') + '#schedule'
       </div>
 
       <form class="hidden space-y-6" data-profile-form novalidate>
+        {/* 步驟 1：基本資料與學號 */}
         <div class="grid gap-5 sm:grid-cols-2">
           <label class="profile-field">
             <span>{copy.name}</span>
             <input name="name" autocomplete="name" maxlength="40" required />
-          </label>
-          <label class="profile-field">
-            <span>{copy.email}</span>
-            <input name="email" type="email" autocomplete="email" maxlength="80" required />
           </label>
           <label class="profile-field">
             <span>{copy.phone}</span>
@@ -82,37 +89,68 @@ const labels = { ...copy, venuesUrl: localePath(locale, '/venues') + '#schedule'
               required
             />
           </label>
-          <label class="profile-field">
+          <label class="profile-field sm:col-span-2">
             <span>{copy.studentId}</span>
             <input
               name="studentId"
               autocapitalize="characters"
+              autocomplete="off"
               maxlength="9"
               placeholder={copy.studentIdPlaceholder}
               required
             />
+            <small class="font-medium text-neutral-600 dark:text-neutral-400">{copy.studentIdHint}</small>
           </label>
         </div>
 
-        {/* 學生證照片：手機上會直接開相機 */}
-        <div class="profile-field">
-          <span>{copy.photo}</span>
-          <p class="text-sm font-medium text-neutral-600 dark:text-neutral-400">{copy.photoHint}</p>
-          <label class="photo-drop mt-2" data-photo-drop>
+        <div class="flex flex-wrap items-center gap-4" data-step-send>
+          <button
+            type="button"
+            class="btn-sticker rounded-[14px] bg-orange-500 px-6 py-3.5 font-black text-neutral-50 hover:bg-orange-600 disabled:opacity-60"
+            data-send
+          >
+            {copy.sendCode}
+          </button>
+        </div>
+
+        {/* 步驟 2：輸入驗證碼 */}
+        <div class="hidden space-y-4 rounded-md border-2 border-dashed border-neutral-400 p-5 dark:border-neutral-600" data-step-verify>
+          <p class="font-bold text-neutral-800 dark:text-neutral-100" data-sent-to></p>
+          <p class="hidden rounded-md bg-yellow-200 px-3 py-2 text-sm font-black text-yellow-900" data-demo-code></p>
+          <label class="profile-field max-w-xs">
+            <span>{copy.code}</span>
             <input
-              type="file"
-              name="photo"
-              accept="image/*"
-              capture="environment"
-              class="sr-only"
-              data-photo-input
+              name="code"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="6"
+              placeholder={copy.codePlaceholder}
+              class="tracking-[0.3em] placeholder-shown:tracking-normal"
             />
-            <img class="hidden max-h-72 w-auto rounded-sm shadow-md" alt="" data-photo-preview />
-            <span class="inline-flex items-center gap-x-2 font-black" data-photo-label>
-              <Icon name="photo" class="h-5 w-5" />
-              {copy.photoPick}
-            </span>
           </label>
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <button
+              type="submit"
+              class="btn-sticker rounded-[14px] bg-orange-500 px-6 py-3.5 font-black text-neutral-50 hover:bg-orange-600 disabled:opacity-60"
+              data-verify
+            >
+              {copy.verify}
+            </button>
+            <button
+              type="button"
+              class="text-sm font-bold text-neutral-700 underline decoration-yellow-500 decoration-2 underline-offset-4 disabled:no-underline disabled:opacity-60 dark:text-neutral-300"
+              data-resend
+            >
+              {copy.resend}
+            </button>
+            <button
+              type="button"
+              class="text-sm font-bold text-neutral-700 underline decoration-yellow-500 decoration-2 underline-offset-4 dark:text-neutral-300"
+              data-change-id
+            >
+              {copy.changeStudentId}
+            </button>
+          </div>
         </div>
 
         <p
@@ -122,16 +160,7 @@ const labels = { ...copy, venuesUrl: localePath(locale, '/venues') + '#schedule'
         >
         </p>
 
-        <div class="flex flex-wrap items-center gap-4 pt-2">
-          <button
-            type="submit"
-            class="btn-sticker rounded-[14px] bg-orange-500 px-6 py-3.5 font-black text-neutral-50 hover:bg-orange-600 disabled:opacity-60"
-            data-profile-submit
-          >
-            {copy.submit}
-          </button>
-          <p class="text-sm text-neutral-600 dark:text-neutral-400">{copy.privacy}</p>
-        </div>
+        <p class="text-sm text-neutral-600 dark:text-neutral-400">{copy.privacy}</p>
       </form>
     </div>
 
@@ -159,7 +188,7 @@ const labels = { ...copy, venuesUrl: localePath(locale, '/venues') + '#schedule'
   :global(.dark) .profile-field {
     color: var(--color-neutral-100);
   }
-  .profile-field input:not([type='file']) {
+  .profile-field input {
     border-radius: 0.75rem;
     border: 2px solid var(--color-neutral-300);
     background: white;
@@ -172,57 +201,44 @@ const labels = { ...copy, venuesUrl: localePath(locale, '/venues') + '#schedule'
     outline: none;
     box-shadow: none;
   }
-  :global(.dark) .profile-field input:not([type='file']) {
+  .profile-field input[readonly] {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-600);
+  }
+  :global(.dark) .profile-field input {
     border-color: var(--color-neutral-600);
     background: var(--color-neutral-900);
     color: var(--color-neutral-100);
-  }
-  .photo-drop {
-    display: flex;
-    min-height: 11rem;
-    cursor: pointer;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    border-radius: 0.75rem;
-    border: 2px dashed var(--color-neutral-400);
-    background: rgb(255 255 255 / 0.5);
-    padding: 1.25rem;
-    transition: border-color 150ms, background-color 150ms;
-  }
-  .photo-drop:hover,
-  .photo-drop:focus-within {
-    border-color: var(--color-neutral-800);
-    background: rgb(255 255 255 / 0.8);
-  }
-  :global(.dark) .photo-drop {
-    background: rgb(0 0 0 / 0.2);
   }
 </style>
 
 <script>
   import { hasRole, isEnabled, signIn, watchSession } from '@scripts/auth';
   import {
-    compressPhoto,
-    submitApplication,
-    watchMyApplication,
-    type Application,
-  } from '@scripts/applications';
+    VerifyFailure,
+    confirmVerificationCode,
+    sendVerificationCode,
+    verificationReady,
+    watchMyProfile,
+    type Profile,
+  } from '@scripts/verification';
 
   type Labels = {
     signInFirst: string;
-    status: Record<'none' | 'pending' | 'approved' | 'rejected', string>;
-    statusHint: Record<'none' | 'pending' | 'approved' | 'rejected', string>;
+    notReady: string;
+    status: Record<'none' | 'approved', string>;
+    statusHint: Record<'none' | 'approved', string>;
     alreadyMember: string;
-    rejectReason: string;
-    photoPick: string;
-    photoChange: string;
-    submit: string;
-    resubmit: string;
-    submitting: string;
-    submitted: string;
-    errors: Record<'required' | 'phone' | 'studentId' | 'photo' | 'failed', string>;
+    sendCode: string;
+    sending: string;
+    resend: string;
+    resendIn: string;
+    sentTo: string;
+    demoCode: string;
+    verify: string;
+    verifying: string;
+    verified: string;
+    errors: Record<string, string>;
     venuesUrl: string;
   };
 
@@ -236,17 +252,20 @@ const labels = { ...copy, venuesUrl: localePath(locale, '/venues') + '#schedule'
     const statusBox = $('[data-profile-status]');
     const badge = $('[data-status-badge]');
     const hint = $('[data-status-hint]');
-    const noteEl = $('[data-status-note]');
+    const summary = $('[data-profile-summary]');
     const bookingLink = $<HTMLAnchorElement>('[data-status-booking]');
     const form = $<HTMLFormElement>('[data-profile-form]');
-    const photoInput = $<HTMLInputElement>('[data-photo-input]');
-    const preview = $<HTMLImageElement>('[data-photo-preview]');
-    const photoLabel = $('[data-photo-label]');
+    const stepSend = $('[data-step-send]');
+    const stepVerify = $('[data-step-verify]');
+    const sendBtn = $<HTMLButtonElement>('[data-send]');
+    const verifyBtn = $<HTMLButtonElement>('[data-verify]');
+    const resendBtn = $<HTMLButtonElement>('[data-resend]');
+    const changeIdBtn = $<HTMLButtonElement>('[data-change-id]');
+    const sentTo = $('[data-sent-to]');
+    const demoCode = $('[data-demo-code]');
     const errorEl = $('[data-profile-error]');
-    const submitBtn = $<HTMLButtonElement>('[data-profile-submit]');
     const toastEl = $('[data-profile-toast]');
-    const input = (name: string) =>
-      form.elements.namedItem(name) as HTMLInputElement;
+    const input = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
 
     // 直接設 display，不會被元素本身的 flex 等 class 蓋過
     const show = (node: HTMLElement, on: boolean, display = 'block') => {
@@ -258,56 +277,73 @@ const labels = { ...copy, venuesUrl: localePath(locale, '/venues') + '#schedule'
       toastEl.textContent = text;
       show(toastEl, true);
       clearTimeout(toastTimer);
-      toastTimer = window.setTimeout(() => show(toastEl, false), 2800);
+      toastTimer = window.setTimeout(() => show(toastEl, false), 3000);
     };
     const setError = (msg: string) => {
       errorEl.textContent = msg;
       show(errorEl, !!msg);
     };
+    const errorText = (err: unknown) => {
+      if (err instanceof VerifyFailure) {
+        const text = labels.errors[err.code] ?? labels.errors.server;
+        return text.replace('{n}', String(err.left ?? 0));
+      }
+      console.error(err);
+      return labels.errors.server;
+    };
 
     bookingLink.href = labels.venuesUrl;
     signInBtn.addEventListener('click', () => signIn());
 
-    const badgeClass: Record<string, string> = {
-      none: 'bg-neutral-200 text-neutral-700',
-      pending: 'bg-yellow-200 text-yellow-900',
-      approved: 'bg-neutral-800 text-neutral-50',
-      rejected: 'bg-orange-500 text-neutral-50',
-    };
-
     let uid = '';
-    let current: Application | null = null;
-    let photo = '';
-    let stopApp: (() => void) | null = null;
+    let stopProfile: (() => void) | null = null;
     let filled = false;
 
-    const setPhoto = (url: string) => {
-      photo = url;
-      preview.src = url;
-      show(preview, !!url);
-      photoLabel.lastChild!.textContent = url ? labels.photoChange : labels.photoPick;
+    // --- 重新寄送的倒數 ---
+    let cooldownTimer = 0;
+    const startCooldown = (seconds = 60) => {
+      clearInterval(cooldownTimer);
+      let left = seconds;
+      const tick = () => {
+        resendBtn.disabled = left > 0;
+        resendBtn.textContent = left > 0 ? labels.resendIn.replace('{n}', String(left)) : labels.resend;
+        left -= 1;
+        if (left < -1) clearInterval(cooldownTimer);
+      };
+      tick();
+      cooldownTimer = window.setInterval(tick, 1000);
     };
 
-    const render = (alreadyMember: boolean) => {
-      const status = current?.status ?? 'none';
+    const setStep = (step: 'send' | 'verify') => {
+      show(stepSend, step === 'send', 'flex');
+      show(stepVerify, step === 'verify');
+      input('studentId').readOnly = step === 'verify';
+    };
+
+    const render = (profile: Profile | null, alreadyMember: boolean) => {
+      const verified = !!profile;
       show(statusBox, true);
-      badge.className = `rounded-full px-3 py-1 text-sm font-black ${badgeClass[status]}`;
-      badge.textContent = labels.status[status];
-      hint.textContent =
-        alreadyMember && status !== 'approved'
+      badge.className = `rounded-full px-3 py-1 text-sm font-black ${verified ? 'bg-neutral-800 text-neutral-50' : 'bg-neutral-200 text-neutral-700'}`;
+      badge.textContent = labels.status[verified ? 'approved' : 'none'];
+      hint.textContent = verified
+        ? labels.statusHint.approved
+        : alreadyMember
           ? labels.alreadyMember
-          : labels.statusHint[status];
-      noteEl.textContent = current?.note ? labels.rejectReason + current.note : '';
-      show(noteEl, status === 'rejected' && !!current?.note);
-      show(bookingLink, alreadyMember || status === 'approved', 'inline-flex');
-      // 已核准或本來就是系上同學以上的人不用再填
-      show(form, !alreadyMember && status !== 'approved');
-      submitBtn.textContent = status === 'none' ? labels.submit : labels.resubmit;
+          : verificationReady
+            ? labels.statusHint.none
+            : labels.notReady;
+      show(summary, verified, 'grid');
+      if (profile)
+        (['name', 'phone', 'studentId', 'ntuEmail'] as const).forEach(key => {
+          summary.querySelector(`[data-summary="${key}"]`)!.textContent = profile[key];
+        });
+      show(bookingLink, verified || alreadyMember, 'inline-flex');
+      show(form, !verified && !alreadyMember && verificationReady);
     };
 
     watchSession(session => {
-      stopApp?.();
-      stopApp = null;
+      stopProfile?.();
+      stopProfile = null;
       show(signInBtn, !session, 'inline-flex');
       message.textContent = labels.signInFirst;
       show(message, !session);
@@ -318,66 +354,82 @@ const labels = { ...copy, venuesUrl: localePath(locale, '/venues') + '#schedule'
       }
       uid = session.user.uid;
       const alreadyMember = hasRole(session, 'student');
-      stopApp = watchMyApplication(
+      if (!filled) {
+        filled = true;
+        input('name').value = session.user.displayName ?? '';
+        setStep('send');
+      }
+      stopProfile = watchMyProfile(
         uid,
-        app => {
-          current = app;
-          // 第一次載入時帶入資料：有申請過就用申請的內容，沒有就用 Google 帳號的名字和信箱
-          if (!filled) {
-            filled = true;
-            input('name').value = app?.name || session.user.displayName || '';
-            input('email').value = app?.email || session.user.email || '';
-            input('phone').value = app?.phone ?? '';
-            input('studentId').value = app?.studentId ?? '';
-            setPhoto(app?.photo ?? '');
-          }
-          render(alreadyMember);
-        },
+        profile => render(profile, alreadyMember),
         err => {
           console.error(err);
-          setError(labels.errors.failed);
+          setError(labels.errors.server);
         }
       );
     });
 
-    photoInput.addEventListener('change', async () => {
-      const file = photoInput.files?.[0];
-      if (!file) return;
-      setError('');
-      try {
-        setPhoto(await compressPhoto(file));
-      } catch (err) {
-        console.error(err);
-        setError(labels.errors.photo);
-      }
+    const readForm = () => ({
+      name: input('name').value.trim(),
+      phone: input('phone').value.replace(/[\s-]/g, ''),
+      studentId: input('studentId').value.trim().toUpperCase(),
     });
 
+    // --- 步驟 1：寄驗證碼 ---
+    const send = async (button: HTMLButtonElement) => {
+      const data = readForm();
+      if (!data.name || !data.phone || !data.studentId) return setError(labels.errors.required);
+      if (!/^09\d{8}$/.test(data.phone)) return setError(labels.errors.phone);
+      setError('');
+      const original = button.textContent;
+      button.disabled = true;
+      button.textContent = labels.sending;
+      try {
+        const result = await sendVerificationCode(data.studentId);
+        input('studentId').value = data.studentId;
+        sentTo.textContent = labels.sentTo.replace('{email}', result.email);
+        demoCode.textContent = result.demoCode ? labels.demoCode.replace('{code}', result.demoCode) : '';
+        show(demoCode, !!result.demoCode);
+        setStep('verify');
+        input('code').value = '';
+        input('code').focus();
+        startCooldown();
+      } catch (err) {
+        setError(errorText(err));
+      } finally {
+        button.disabled = false;
+        button.textContent = original;
+        if (button === resendBtn && stepVerify.style.display !== 'none') startCooldown();
+      }
+    };
+    sendBtn.addEventListener('click', () => send(sendBtn));
+    resendBtn.addEventListener('click', () => send(resendBtn));
+    changeIdBtn.addEventListener('click', () => {
+      setError('');
+      setStep('send');
+      input('studentId').focus();
+    });
+
+    // --- 步驟 2：完成驗證 ---
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      const data = {
-        name: input('name').value.trim(),
-        email: input('email').value.trim(),
-        phone: input('phone').value.replace(/[\s-]/g, ''),
-        studentId: input('studentId').value.trim().toUpperCase(),
-        photo,
-      };
-      if (Object.values(data).some(v => !v)) return setError(labels.errors.required);
-      if (!/^09\d{8}$/.test(data.phone)) return setError(labels.errors.phone);
-      if (!/^[A-Z]\d{2}[A-Z0-9]\d{5}$/.test(data.studentId))
-        return setError(labels.errors.studentId);
+      if (stepVerify.style.display === 'none') return send(sendBtn);
+      const code = input('code').value.trim();
+      if (!/^\d{6}$/.test(code)) return setError(labels.errors.codeRequired);
+      const data = readForm();
+      if (!data.name || !/^09\d{8}$/.test(data.phone)) return setError(labels.errors.phone);
       setError('');
-      submitBtn.disabled = true;
-      submitBtn.textContent = labels.submitting;
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = labels.verifying;
       try {
-        await submitApplication(uid, data);
-        toast(labels.submitted);
+        await confirmVerificationCode(uid, { code, name: data.name, phone: data.phone });
+        toast(labels.verified);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
-        console.error(err);
-        setError(labels.errors.failed);
+        setError(errorText(err));
       } finally {
-        submitBtn.disabled = false;
-        render(false);
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = labels.verify;
       }
     });
   }

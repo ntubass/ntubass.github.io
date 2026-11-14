@@ -1,6 +1,5 @@
 import type { Booking } from '@data/venues';
 import type { Role } from '@data/firebase';
-import type { Application } from '@scripts/applications';
 
 /**
  * 展示模式的假資料：還沒設定 Firebase 時，在自己電腦上（`npm run dev`）用來看
@@ -28,7 +27,8 @@ const KEYS = {
   role: 'demo:role',
   bookings: 'demo:bookings',
   users: 'demo:users',
-  applications: 'demo:applications',
+  profiles: 'demo:profiles',
+  code: 'demo:code',
 };
 
 const read = <T>(key: string, fallback: () => T): T => {
@@ -155,59 +155,58 @@ export const onDemoUsers = (fn: UserListener) => {
   return () => userListeners.delete(fn);
 };
 
-// --- 系上同學申請 ---
+// --- 系上同學信箱驗證 ---
 
-/** 示意用的學生證照片（不是真的證件） */
-const SAMPLE_ID_PHOTO =
-  'data:image/svg+xml,' +
-  encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400"><rect width="640" height="400" rx="24" fill="#efe9dc"/><rect x="32" y="32" width="170" height="210" rx="10" fill="#d3c9b5"/><text x="240" y="90" font-size="34" font-family="sans-serif" font-weight="700" fill="#2b2420">範例學生證</text><text x="240" y="150" font-size="24" font-family="sans-serif" fill="#5f564a">展示模式用的示意圖</text><text x="240" y="200" font-size="24" font-family="sans-serif" fill="#5f564a">不是真的證件</text></svg>`
-  );
+export interface DemoProfile {
+  uid: string;
+  name: string;
+  phone: string;
+  studentId: string;
+  ntuEmail: string;
+  verifiedAt: Date;
+}
 
-const seedApplications = (): Application[] => [
-  {
-    uid: 'demo-u1',
-    name: '範例同學 A',
-    email: 'student-a@example.com',
-    phone: '0912345678',
-    studentId: 'B12705001',
-    photo: SAMPLE_ID_PHOTO,
-    status: 'pending',
-    note: '',
-    submittedAt: new Date(Date.now() - 3600_000 * 5),
-  },
-  {
-    uid: 'demo-u2',
-    name: '範例同學 B',
-    email: 'student-b@example.com',
-    phone: '0987654321',
-    studentId: 'B11705023',
-    photo: SAMPLE_ID_PHOTO,
-    status: 'pending',
-    note: '',
-    submittedAt: new Date(Date.now() - 3600_000 * 30),
-  },
-];
-
-type ApplicationListener = (list: Application[]) => void;
-const applicationListeners = new Set<ApplicationListener>();
-
-export const getDemoApplications = (): Application[] =>
-  read(KEYS.applications, seedApplications).map(a => ({
-    ...a,
-    submittedAt: a.submittedAt ? new Date(a.submittedAt) : null,
-  }));
-export const setDemoApplication = (app: Application) => {
-  const list = getDemoApplications().filter(a => a.uid !== app.uid);
-  write(KEYS.applications, [...list, app]);
-  const all = getDemoApplications();
-  applicationListeners.forEach(fn => fn(all));
+const seedProfiles = (): DemoProfile[] => {
+  const p = (uid: string, name: string, phone: string, studentId: string, days: number) => ({
+    uid,
+    name,
+    phone,
+    studentId,
+    ntuEmail: `${studentId.toLowerCase()}@ntu.edu.tw`,
+    verifiedAt: new Date(Date.now() - days * 86400000),
+  });
+  return [
+    p('demo-u3', '範例同學 C', '0912345678', 'B12701023', 10),
+    p('demo-u4', '範例同學 D', '0923456789', 'B11701045', 18),
+    p('demo-u5', '範例幹部 E', '0934567890', 'B11701002', 35),
+    p('demo-u6', '範例會長 F', '0945678901', 'B10701011', 55),
+  ];
 };
-export const onDemoApplications = (fn: ApplicationListener) => {
-  applicationListeners.add(fn);
-  fn(getDemoApplications());
-  return () => applicationListeners.delete(fn);
+
+type ProfileListener = (list: DemoProfile[]) => void;
+const profileListeners = new Set<ProfileListener>();
+
+export const getDemoProfiles = (): DemoProfile[] =>
+  read(KEYS.profiles, seedProfiles).map(x => ({ ...x, verifiedAt: new Date(x.verifiedAt) }));
+export const setDemoProfile = (profile: DemoProfile) => {
+  write(KEYS.profiles, [...getDemoProfiles().filter(x => x.uid !== profile.uid), profile]);
+  const all = getDemoProfiles();
+  profileListeners.forEach(fn => fn(all));
 };
+export const onDemoProfiles = (fn: ProfileListener) => {
+  profileListeners.add(fn);
+  fn(getDemoProfiles());
+  return () => profileListeners.delete(fn);
+};
+
+/** 展示模式的「寄出」的驗證碼（正式版的驗證碼只存在 Apps Script 那端） */
+export interface DemoCode {
+  code: string;
+  studentId: string;
+  attempts: number;
+}
+export const getDemoCode = () => read<DemoCode | null>(KEYS.code, () => null);
+export const setDemoCode = (code: DemoCode | null) => write(KEYS.code, code);
 
 /** 清掉展示資料，回到預設的範例 */
 export const resetDemo = () => {

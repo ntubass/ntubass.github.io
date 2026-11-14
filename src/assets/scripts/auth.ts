@@ -203,6 +203,20 @@ export async function signIn() {
   }
 }
 
+/** 展示模式：改變「展示帳號」的角色並立刻更新畫面（信箱驗證成功時用） */
+export function setDemoSessionRole(role: Role) {
+  if (!isDemo) return;
+  setDemoRole(role);
+  emitDemo();
+}
+
+/** 目前登入者的 Firebase 登入憑證（給 Apps Script 確認身分用） */
+export async function getIdToken() {
+  const user = auth?.currentUser;
+  if (!user) throw new Error('not-signed-in');
+  return user.getIdToken();
+}
+
 export async function signOut() {
   if (isDemo) {
     setDemoRole(null);

@@ -6,9 +6,9 @@ import { getCopy } from '@/copy';
 import type { MarketingLocale } from '@utils/locale';
 
 /**
- * 管理後台（只有超級管理員）：
- * 1. 待審核的申請：看同學填的資料與學生證照片，核准為系上同學或退回（照片會一起刪除）
- * 2. 所有使用者：設定角色（一般／系上同學／管理員）；超級管理員本身只能在 Firebase 主控台設定
+ * 管理後台（只有超級管理員）：所有使用者的清單，含信箱驗證時填的學號與手機，並設定角色
+ * （一般／系上同學／管理員）。工管系同學用臺大信箱驗證後會自動成為系上同學；
+ * 學號對不上的同學在這裡手動設定。超級管理員本身只能在 Firebase 主控台設定。
  * 不在導覽列上，也不會出現在 sitemap。真正的權限檢查在 firestore.rules，這個頁面只是操作介面。
  */
 interface Props {
@@ -32,19 +32,7 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
         {copy.admin.notConfigured}
       </p>
 
-      <div class="hidden space-y-14" data-admin-panel>
-        {/* 待審核的申請 */}
-        <section>
-          <h2 class="mb-5 flex items-center gap-3 text-2xl font-black text-neutral-800 dark:text-neutral-100">
-            {copy.admin.pendingTitle}
-            <span
-              class="rounded-full bg-orange-500 px-2.5 py-0.5 text-sm text-neutral-50"
-              data-pending-count
-            ></span>
-          </h2>
-          <div class="grid gap-6 lg:grid-cols-2" data-pending-list></div>
-        </section>
-
+      <div class="hidden" data-admin-panel>
         {/* 所有使用者 */}
         <section>
           <h2 class="mb-5 text-2xl font-black text-neutral-800 dark:text-neutral-100">
@@ -61,11 +49,13 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
           </div>
 
           <div class="overflow-x-auto rounded-md bg-neutral-50 shadow-[0_12px_24px_-12px_rgb(60_45_30/0.45)] dark:bg-neutral-800">
-            <table class="w-full min-w-[40rem] text-left text-sm">
+            <table class="w-full min-w-[52rem] text-left text-sm">
               <thead class="border-b border-neutral-300 text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
                 <tr>
                   <th class="p-3 font-bold">{copy.admin.name}</th>
                   <th class="p-3 font-bold">{copy.admin.email}</th>
+                  <th class="p-3 font-bold">{copy.admin.studentId}</th>
+                  <th class="p-3 font-bold">{copy.admin.phone}</th>
                   <th class="p-3 font-bold">{copy.admin.joined}</th>
                   <th class="p-3 font-bold">{copy.admin.role}</th>
                 </tr>
@@ -76,19 +66,6 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
         </section>
       </div>
     </div>
-
-    {/* 學生證照片放大 */}
-    <dialog
-      class="photo-dialog m-auto max-h-[90vh] max-w-[min(56rem,94vw)] bg-transparent p-0"
-      data-photo-dialog
-    >
-      <form method="dialog" class="polaroid p-3 pb-3">
-        <img class="max-h-[80vh] w-auto" alt={copy.admin.photoAlt} data-photo-full />
-        <button class="absolute -top-3 -right-3 grid h-9 w-9 place-items-center rounded-full bg-neutral-800 text-lg font-black text-neutral-50" aria-label="關閉">
-          ×
-        </button>
-      </form>
-    </dialog>
 
     <div
       class="pointer-events-none fixed inset-x-0 bottom-6 z-100 flex justify-center px-4"
@@ -103,21 +80,10 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
   </Section>
 </MainLayout>
 
-<style>
-  .photo-dialog::backdrop {
-    background: rgb(20 16 14 / 0.6);
-  }
-</style>
-
 <script>
   import { hasRole, isEnabled, watchSession } from '@scripts/auth';
   import { setUserRole, watchUsers, type UserRow } from '@scripts/users';
-  import {
-    approveApplication,
-    rejectApplication,
-    watchPendingApplications,
-    type Application,
-  } from '@scripts/applications';
+  import { watchProfiles, type Profile } from '@scripts/verification';
   import { ROLE_RANK, type Role } from '@data/firebase';
 
   type Labels = {
@@ -128,17 +94,8 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
     empty: string;
     saved: string;
     saveFailed: string;
-    pendingEmpty: string;
-    email: string;
-    phone: string;
-    studentId: string;
-    submittedAt: string;
-    approve: string;
-    reject: string;
-    rejectPrompt: string;
-    approved: string;
-    rejected: string;
-    photoAlt: string;
+    notVerified: string;
+    profileName: string;
     roles: Record<Role, string>;
   };
 
@@ -152,10 +109,6 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
     const rowsEl = $('[data-admin-rows]');
     const search = $<HTMLInputElement>('[data-admin-search]');
     const filters = $('[data-admin-filters]');
-    const pendingList = $('[data-pending-list]');
-    const pendingCount = $('[data-pending-count]');
-    const dialog = $<HTMLDialogElement>('[data-photo-dialog]');
-    const fullPhoto = $<HTMLImageElement>('[data-photo-full]');
     const toastEl = $('[data-admin-toast]');
     const roles = Object.keys(ROLE_RANK) as Role[];
     message.textContent = labels.signInFirst;
@@ -176,94 +129,10 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
 
     let me = '';
     let users: UserRow[] = [];
+    // 信箱驗證時填的資料，以 uid 對應
+    let profiles = new Map<string, Profile>();
     let filter: Role | 'all' = 'all';
     let stops: (() => void)[] = [];
-
-    // --- 待審核的申請 ---
-    const renderPending = (apps: Application[]) => {
-      pendingCount.textContent = String(apps.length);
-      pendingCount.hidden = !apps.length;
-      pendingList.replaceChildren();
-      if (!apps.length) {
-        pendingList.append(
-          el('p', 'text-neutral-600 dark:text-neutral-400', labels.pendingEmpty)
-        );
-        return;
-      }
-      apps.forEach(app => {
-        const card = el(
-          'article',
-          'flex flex-col gap-5 rounded-md bg-neutral-50 p-5 shadow-[0_12px_24px_-12px_rgb(60_45_30/0.45)] sm:flex-row dark:bg-neutral-800'
-        );
-        // 學生證照片：點了放大
-        const thumb = el(
-          'button',
-          'polaroid shrink-0 self-start p-2 pb-2 transition-transform hover:-rotate-1 sm:w-48'
-        );
-        thumb.setAttribute('type', 'button');
-        thumb.setAttribute('aria-label', labels.photoAlt);
-        const img = el('img', 'aspect-[4/3] w-full object-cover') as HTMLImageElement;
-        img.src = app.photo;
-        img.alt = labels.photoAlt;
-        thumb.append(img);
-        thumb.addEventListener('click', () => {
-          fullPhoto.src = app.photo;
-          dialog.showModal();
-        });
-
-        const info = el('div', 'min-w-0 grow');
-        info.append(
-          el('h3', 'text-xl font-black text-neutral-800 dark:text-neutral-100', app.name)
-        );
-        const dl = el('dl', 'mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm');
-        [
-          [labels.studentId, app.studentId],
-          [labels.phone, app.phone],
-          [labels.email, app.email],
-          [labels.submittedAt, app.submittedAt?.toLocaleString('zh-TW') ?? ''],
-        ].forEach(([k, v]) => {
-          dl.append(el('dt', 'font-bold text-neutral-500 dark:text-neutral-400', k));
-          dl.append(el('dd', 'break-all text-neutral-800 dark:text-neutral-200', v));
-        });
-        info.append(dl);
-
-        const actions = el('div', 'mt-5 flex flex-wrap gap-3');
-        const approve = el(
-          'button',
-          'btn-sticker rounded-xl bg-neutral-800 px-4 py-2 text-sm font-black text-neutral-50 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900',
-          labels.approve
-        ) as HTMLButtonElement;
-        const reject = el(
-          'button',
-          'btn-sticker rounded-xl bg-neutral-50 px-4 py-2 text-sm font-black text-orange-600 disabled:opacity-60',
-          labels.reject
-        ) as HTMLButtonElement;
-        approve.type = reject.type = 'button';
-        const act = async (fn: () => Promise<void>, done: string) => {
-          approve.disabled = reject.disabled = true;
-          try {
-            await fn();
-            toast(done);
-          } catch (err) {
-            console.error(err);
-            toast(labels.saveFailed);
-            approve.disabled = reject.disabled = false;
-          }
-        };
-        approve.addEventListener('click', () =>
-          act(() => approveApplication(app.uid), labels.approved)
-        );
-        reject.addEventListener('click', () => {
-          const note = prompt(labels.rejectPrompt)?.trim();
-          if (note) act(() => rejectApplication(app.uid, note), labels.rejected);
-        });
-        actions.append(approve, reject);
-        info.append(actions);
-
-        card.append(thumb, info);
-        pendingList.append(card);
-      });
-    };
 
     // --- 所有使用者：超級管理員可以在一般／系上同學／管理員之間設定 ---
     const assignable = (target: Role): Role[] =>
@@ -293,12 +162,16 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
       const term = search.value.trim().toLowerCase();
       const list = users
         .filter(u => filter === 'all' || u.role === filter)
-        .filter(
-          u =>
+        .filter(u => {
+          const p = profiles.get(u.uid);
+          return (
             !term ||
             u.name.toLowerCase().includes(term) ||
-            u.email.toLowerCase().includes(term)
-        )
+            u.email.toLowerCase().includes(term) ||
+            !!p?.studentId.toLowerCase().includes(term) ||
+            !!p?.name.toLowerCase().includes(term)
+          );
+        })
         .sort(
           (a, b) =>
             ROLE_RANK[b.role] - ROLE_RANK[a.role] ||
@@ -309,7 +182,7 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
       if (!list.length) {
         const tr = el('tr');
         const td = el('td', 'p-6 text-center text-neutral-500', labels.empty);
-        td.setAttribute('colspan', '4');
+        td.setAttribute('colspan', '6');
         tr.append(td);
         rowsEl.append(tr);
         return;
@@ -320,6 +193,18 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
           el('td', 'p-3 font-bold', u.uid === me ? `${u.name}${labels.you}` : u.name)
         );
         tr.append(el('td', 'p-3 text-neutral-600 dark:text-neutral-400', u.email));
+        // 學號與手機：信箱驗證時填的；還沒驗證的顯示「尚未驗證」
+        const p = profiles.get(u.uid);
+        if (p) {
+          const idCell = el('td', 'p-3 font-bold', p.studentId);
+          if (p.name && p.name !== u.name)
+            idCell.append(el('span', 'block text-xs font-medium text-neutral-500', `${labels.profileName}：${p.name}`));
+          tr.append(idCell, el('td', 'p-3 text-neutral-700 dark:text-neutral-300', p.phone));
+        } else {
+          const td = el('td', 'p-3 text-xs text-neutral-400', labels.notVerified);
+          td.setAttribute('colspan', '2');
+          tr.append(td);
+        }
         tr.append(
           el(
             'td',
@@ -389,7 +274,10 @@ const labels = { ...copy.admin, roles: copy.auth.roles };
         toast(labels.saveFailed);
       };
       stops.push(
-        watchPendingApplications(renderPending, onError),
+        watchProfiles(list => {
+          profiles = new Map(list.map(p => [p.uid, p]));
+          renderUsers();
+        }, onError),
         watchUsers(list => {
           users = list;
           renderUsers();
